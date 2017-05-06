@@ -17,7 +17,7 @@ dubで提供されている[ロックフリーなパッケージ`lock-free`](htt
 コンパイラは`ldc 1.1.0 (v2.071.2)`，計測したPCはMBP Early 2015 Intel Core i5 2.9GHzです．
 
 下のコードでは，`inserter`と`consumer`を別々のスレッドで実行します．
-`inserter`ではキューに値を`N == 1024*1024*8`個入れて，`consumer`では並行してキューから値を取り出していきます．
+`inserter`ではキューに値を`N == 1024*1024`個入れて，`consumer`では並行してキューから値を取り出していきます．
 
 ~~~~~~~~~~d
 #!/usr/bin/env dub --compiler=ldmd2 --build=release --single
