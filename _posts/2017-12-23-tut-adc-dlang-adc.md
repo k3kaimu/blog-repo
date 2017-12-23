@@ -1,4 +1,10 @@
-# 研究室でD言語を使っているお話（今年一年のまとめ）
+---
+layout: post
+title:  "研究室でD言語を使っているお話（今年一年のまとめ）"
+categories: blog
+tags:  blog
+author: けーさん
+---
 
 ## はじめに
 
