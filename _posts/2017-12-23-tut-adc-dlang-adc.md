@@ -26,7 +26,7 @@ author: けーさん
 ということで、ベースバンド信号シミュレータ系ライブラリをD言語で作りました。
 論文の関係上まだGitHubにはソースコードを上げていませんが、現在IEEE Trans. on Wireless Communicationsに出している論文がAcceptされ次第ソースコードの公開をします。
 ちなみに、このライブラリを使用してシミュレーションした結果は2017年3月にサンフランシスコで開催された国際会議IEEE WCNC (Wireless Communications and Networking Conference)にて発表しました。
-[そのときの会議論文はこちら](ieeexplore.ieee.org/document/7925765/)（ちゃんと論文中にシミュレータがD言語製であると記述しています！）。
+[そのときの会議論文はこちら](http://ieeexplore.ieee.org/document/7925765/)（ちゃんと論文中にシミュレータがD言語製であると記述しています！）。
 
 
 ## ソフトウェア無線（USRP）用ライブラリ
