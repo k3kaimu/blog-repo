@@ -226,7 +226,7 @@ $$
 このチェビシェフ多項式を用いて$$g(\cos(2\pi f_0 t))$$のスペクトルは次のように記述できます．
 
 $$
-\mathcal{F}[g(\cos(2\pi f_0 t))] = \frac{a_0}{2} \delta(f) + \sum_{n=0}^{\infty} a_n \left(\delta(f-n) + \delta(f+n) \right)
+\mathcal{F}[g(\cos(2\pi f_0 t))] = \frac{a_0}{2} \delta(f) + \sum_{n=0}^{\infty} \frac{a_n}{2} \left(\delta(f-nf_0) + \delta(f+nf_0) \right)
 $$
 
 $$
