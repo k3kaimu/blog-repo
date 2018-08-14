@@ -211,7 +211,7 @@ error: 2.71051e-20
 ## 評価3
 
 $$
-\int_{-\infty}^{\infty} \exp(-x^2) \cos(2x) = \sqrt{\pi} e^{-1}
+\int_{-\infty}^{\infty} \exp(-x^2) \cos(2x) dx = \sqrt{\pi} e^{-1}
 $$
 
 このような形の積分では，DE公式では3通りの積分方法があります．
