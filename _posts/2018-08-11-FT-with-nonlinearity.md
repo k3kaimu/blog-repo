@@ -21,7 +21,6 @@ author: けーさん
 <style type="text/css">
 p {
   max-width: 600px;
-  min-width: 400px;
 }
 
 p img {
