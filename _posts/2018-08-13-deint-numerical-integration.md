@@ -348,6 +348,30 @@ error: 2.57791e-07
 ```
 
 
+**追記（2018年8月14日）**
+
+関数の形が$$\exp(-x^^2)$$で減衰しているので，標本点は負方向に集中的に配置し，ステップサイズも微調整しました．
+
+```d
+size_t nlow = N/2-10-1;
+auto de1 = makeDEIntFourier!real(No.isSine, 2, 8.0L/nlow, nlow, 10);
+auto de2 = makeDEIntFourier!real(No.isSine, 2, 8.0L/nlow, nlow, 10);
+
+// ...
+```
+
+すると，以下の通り誤差を減少できました．
+
+
+```
+32: error = 0.232414
+64: error = 0.000493887
+128: error = 1.71189e-09
+256: error = 1.0842e-19
+512: error = 5.42101e-20
+```
+
+
 ## 評価4
 
 $$
