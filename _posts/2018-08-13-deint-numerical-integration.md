@@ -503,6 +503,42 @@ error: 1.71968e-08
 分点数を増やしたりしてもそんなに誤差は減少しませんし，区間は`-3.3`よりも小さくすると発散してしまうので，`deint`ではこれが限界みたいです．
 
 
+**追記（2018年8月15日）**
+
+次のように$$x=e^t$$と変数変換すると$$x=0$$が$$t=-\infty$$に移されて数値積分が楽になります．
+
+$$
+\int_{0}^{1} \frac{\log(x)}{\sqrt{x}} dx = \int_{-\infty}^{0} s \exp\left({\frac{s}{2}}\right) ds
+$$
+
+この積分は半無限区間であり，被積分関数は$$\left\lvert s \right\rvert \rightarrow \infty$$で指数減衰するので，`Yes.isExpDecay`を引数に与えます．
+
+
+```d
+auto de = makeDEInt!real(-real.infinity, 0, Yes.isExpDecay);
+auto I = de.integrate((real x) => x*exp(x*0.5));
+
+auto A = -4;
+
+writeln("analysis: ", A);
+writeln("deint: ", I);
+writeln("error: ", abs(I - A));
+```
+
+```
+analysis: -4
+deint: -4
+error: 2.1684e-19
+```
+
+誤差がかなり軽減されました．
+
+今回のように変数変換をして発散する点を無限遠点に飛ばしてしまう手法は数値積分で有効な手法ですが，
+DE公式でも同様に有効なようです．
+
+<!-- このように，DE公式でも -->
+
+
 
 ## まとめ
 
