@@ -425,6 +425,37 @@ $$
 目安としては$$(-5, 5)$$でダメなら$$(-4, 4)$$や$$(-3, 3)$$を試すといいと思います．
 
 
+**追記(2018年12月18日)**
+
+この関数は明らかに$$x=1$$で分母に桁落ちが発生しますので，精度が悪い原因は発散ではなく桁落ちです．
+
+この積分を精度よく計算したい場合，$$t=x-1$$と変数変換します．
+
+すると，分母は$$t(t^2+2t+2)$$となり，$$x=1$$つまり$$t=0$$での分母での桁落ちが起きなくなります．
+
+以下のコードでは，片側`N=50`ではあまり精度が良くなかったので，片側`N=100`になっています．
+
+```d
+auto de1 = makeDEInt!real(-real.infinity, 0, No.isExpDecay, 100);
+auto de2 = makeDEInt!real(0, real.infinity, No.isExpDecay, 100);
+auto I1 = de1.integrate((real x) => 1/(x*(x^^2+2*x+2)));
+auto I2 = de2.integrate((real x) => 1/(x*(x^^2+2*x+2)));
+
+auto I = I1 + I2;
+
+auto A = -PI/2;
+
+writeln("analysis: ", A);
+writeln("deint: ", I);
+writeln("error: ", abs(I - A));
+```
+
+```
+analysis: -1.5708
+deint: -1.5708
+error: 2.30926e-14
+```
+
 ## 評価5
 
 $$
