@@ -4,11 +4,11 @@ title:  "deint：シンプルで高精度な数値積分ライブラリ"
 categories: blog
 tags:  blog
 author: けーさん
+mathjax: true
 ---
 
 
-<!-- MathJaxを有効 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
   "HTML-CSS": {
@@ -18,7 +18,7 @@ author: けーさん
     undefinedFamily: "'Raleway', Helvetica, Arial, sans-serif"
   }
   });
-</script>
+</script> -->
 
 
 世の中には専門家が書いた精度保証付きの高機能・高性能な数値積分ライブラリが多数あります．

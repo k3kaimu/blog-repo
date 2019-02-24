@@ -4,9 +4,10 @@ title:  "[論文紹介] 複素ガウス過程と非線形変換"
 categories: blog
 tags:  blog
 author: けーさん
+mathjax: true
 ---
 
-<!-- MathJaxを有効 -->
+<!--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
@@ -18,6 +19,7 @@ author: けーさん
   }
   });
 </script>
+-->
 
 
 ガウス過程と非線形変換は，それぞれ様々な分野で活用されています．

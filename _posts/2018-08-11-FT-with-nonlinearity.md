@@ -4,10 +4,11 @@ title:  "非線形性とフーリエ変換・スペクトルのお話"
 categories: blog
 tags:  blog
 author: けーさん
+mathjax: true
 ---
 
 <!-- MathJaxを有効 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
   "HTML-CSS": {
@@ -17,7 +18,7 @@ author: けーさん
     undefinedFamily: "'Raleway', Helvetica, Arial, sans-serif"
   }
   });
-</script>
+</script> -->
 <style type="text/css">
 p {
   max-width: 600px;
