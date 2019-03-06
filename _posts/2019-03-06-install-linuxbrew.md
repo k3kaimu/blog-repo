@@ -170,4 +170,4 @@ $ HOMEBREW_NO_ENV_FILTERING=1 brew install git
 
 この後はお好きにどうぞ．
 
-もし，`brew upgrade git` を行うことがあれば，その時は `HOMEBREW_NO_ENV_FILTERLING=1 brew upgrade git` とするのだけを忘れずに．
+もし，`brew upgrade git` を行うことがあれば，その時は `HOMEBREW_NO_ENV_FILTERING=1 brew upgrade git` とするのだけを忘れずに．
