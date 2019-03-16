@@ -171,3 +171,30 @@ $ HOMEBREW_NO_ENV_FILTERING=1 brew install git
 この後はお好きにどうぞ．
 
 もし，`brew upgrade git` を行うことがあれば，その時は `HOMEBREW_NO_ENV_FILTERING=1 brew upgrade git` とするのだけを忘れずに．
+
+
+
+## openssl, curlのビルド（3月16日追記）
+
+一応書いておきます．
+
+```sh
+# OpenSSLのビルド
+cd /work/$USER
+wget -nc http://www.openssl.org/source/openssl-1.0.2q.tar.gz
+tar xf openssl-1.0.2q.tar.gz
+cd openssl-1.0.2q
+./config --prefix=/work/$USER/localopenssl-1.0.2q enable-shared
+make
+make install
+
+
+# curlのビルド
+cd /work/$USER
+wget -nc --no-check-certificate https://curl.haxx.se/download/curl-7.64.0.tar.gz
+tar xf curl-7.64.0.tar.gz
+cd curl-7.64.0
+./configure --prefix=/work/$USER/localcurl-7.64.0 --with-openssl=/work/$USER/localopenssl-1.0.2q
+make -j10
+make install
+```
