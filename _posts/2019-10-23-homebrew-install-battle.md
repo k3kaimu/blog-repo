@@ -10,7 +10,7 @@ author: けーさん
 豊橋技科大の新クラスタシステムが2019年9月中旬ごろから運用が開始されました．
 少し遅くなりましたが，Homebrewの環境構築などに目処がついたので，まとめておこうと思います．
 
-（2019年10月30日に書き直しました）
+（2019年10月30日，12月8日に書き直しました）
 
 
 <!--more-->
@@ -112,10 +112,12 @@ eval $($LINUXBREW_ROOT/.linuxbrew/bin/brew shellenv)
 
 ## VSCodeのRemote Development
 
-未だに成功しておらず．
-たぶん窓口サーバのポート転送が禁止されているからだと思います．
+（この節は12月8日に書き直しました）
 
-参考：[VS Code Remote Development SSHセットアップ中にハマったこと - Qiita](https://qiita.com/igrep/items/3a3ba8e9089885c3c9f6#%E3%83%8F%E3%83%9E%E3%81%A3%E3%81%9F%E3%81%A8%E3%81%93%E3%82%8D2-could-not-fetch-remote-environment)
+当初は窓口サーバへのsshのポート転送が許可されていないため，VS CodeのRemote Development拡張機能が使えませんでした．
+この件をIMCに問い合わせたところ，対応していただけましたので，今では利用できます．
+
+ただし注意点として，VS Codeの設定`"remote.SSH.lockfilesInTmp` を `true` にしないと正常に起動できません．
 
 
 ## D言語コンパイラなど
