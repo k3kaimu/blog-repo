@@ -33,6 +33,9 @@ alias qalloccpu='qsub -I -q wEduq -l select=1:ncpus=1:mem=6gb -v DOCKER_IMAGE=im
 alias qallocnode='qsub -I -q wSrchq -l select=1:ncpus=28:mem=192gb -v DOCKER_IMAGE=imc.tut.ac.jp/centos7:2019.09 -- bash'
 ```
 
+また，Dockerを使うと`qstat -f`でCPU時間やCPU利用率が正常に表示されないようです．
+なので，「複数CPU使っているのにCPU使用率上がらないなあ」という人はDockerを使ってないかどうか確認して，代わりにSingularityを使うようにしましょう．
+
 
 
 ## Homebrew
@@ -117,7 +120,7 @@ eval $($LINUXBREW_ROOT/.linuxbrew/bin/brew shellenv)
 当初は窓口サーバへのsshのポート転送が許可されていないため，VS CodeのRemote Development拡張機能が使えませんでした．
 この件をIMCに問い合わせたところ，対応していただけましたので，今では利用できます．
 
-ただし注意点として，VS Codeの設定`"remote.SSH.lockfilesInTmp` を `true` にしないと正常に起動できません．
+ただし注意点として，VS Codeの設定で`"remote.SSH.lockfilesInTmp` を `true` にしないと正常に起動できません．
 
 
 ## D言語コンパイラなど
@@ -155,7 +158,26 @@ PS1=$_O_PS1_
 [自作ライブラリ](https://github.com/k3kaimu/TUT-HPCLIB4D)も新クラスタへ対応しました．
 ただし，まだ依存ジョブには対応できてません．
 
-そのうちインストール方法もちゃんと書き直します．
+[GitHubのリポジトリ](https://github.com/k3kaimu/TUT-HPCLIB4D)をcloneして，以下の環境変数を設定すれば使えます．
+`TUTHPC_EXPORT_ENVS`はジョブ投入時の環境変数のうち，コンテナ内に引き継ぐ環境変数のリストです．
+この設定では`USER`だけを引き継ぐようにしていますが，`PATH`なども引き継ぐ場合は`export TUTHPC_EXPORT_ENVS='USER,PATH'`としてください．
+
+```sh
+export TUTHPC_CLUSTER_NAME="TUTX"
+export TUTHPC_EMAIL_ADDR="<your email address>"
+export TUTHPC_QSUB_ARGS='-v SINGULARITY_IMAGE=imc.tut.ac.jp/centos7:2019.09'
+export TUTHPC_EXPORT_ENVS='USER'
+```
+
+追加で，`TUTHPC_DEFAULT_ARGS`を設定することもできます．
+たとえば，以下のように設定した場合，実行時引数に`--th:g=4 --th:pmem=8`と指定したことと等価になります．
+
+```sh
+export TUTHPC_DEFAULT_ARGS='--th:g=4,--th:pmem=8'
+```
+
+`TUTHPC_DEFAULT_ARGS`が設定されていたとしても実行時引数で値を上書きすることもできます．
+つまり，この状態で`./program --th:g=10`とした場合は，`./program --th:g=10 --th:pmem=8`と等価になります．
 
 
 ## クラスタの使用状況の確認
