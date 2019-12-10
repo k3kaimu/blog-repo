@@ -62,3 +62,6 @@ plugins:
   - jekyll-sitemap
 
 paginate: 6
+
+timezone: Asia/Tokyo
+future: true
