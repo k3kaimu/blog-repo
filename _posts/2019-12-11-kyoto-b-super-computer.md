@@ -183,3 +183,7 @@ xsnd13,c222222,aa000
 ```
 
 ただ，こいつは京大スパコンではうごきません．．．
+
+
+また，GitHub Actionsを利用して[リリース毎のビルド](https://github.com/k3kaimu/cluster-tools/actions?query=workflow%3Arelease)を自動化しています．  
+参考になれば．．．
