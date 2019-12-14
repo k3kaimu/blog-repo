@@ -135,7 +135,7 @@ author: けーさん/こまたん
 <blockquote class="twitter-tweet" data-conversation="none"><p lang="ja" dir="ltr">豊橋市　賀茂しょうぶ園<br><br>5月末～6月上旬に「花しょうぶまつり」があります <a href="https://t.co/QCIwYq3J9A">pic.twitter.com/QCIwYq3J9A</a></p>&mdash; けーさん/こまたん (@k3k0ma) <a href="https://twitter.com/k3k0ma/status/1205678190997303298?ref_src=twsrc%5Etfw">December 14, 2019</a></blockquote> 
 
 + シーズン：5月下旬～6月上旬
-+ おすすめ度：★★2
++ おすすめ度：★★★★4
 
 お花です．  
 お花は心をキレイにします．たぶん．
@@ -178,7 +178,7 @@ author: けーさん/こまたん
 <blockquote class="twitter-tweet" data-conversation="none"><p lang="ja" dir="ltr">東京　サンシャイン水族館<br><br>知らない女の人と行った．<br>なぜ．．．<br>2019年6月 <a href="https://t.co/PkWgenW11O">pic.twitter.com/PkWgenW11O</a></p>&mdash; けーさん/こまたん (@k3k0ma) <a href="https://twitter.com/k3k0ma/status/1205682293932560384?ref_src=twsrc%5Etfw">December 14, 2019</a></blockquote>
 
 + シーズン：いつでも
-+ おすすめ度：★★★★4
++ おすすめ度：★★★3
 
 なんかよくわかりませんが，その日に初めて会った女の人と二人で行きました．  
 どうして．．．
