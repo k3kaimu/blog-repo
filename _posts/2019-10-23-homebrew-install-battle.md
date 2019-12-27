@@ -122,7 +122,10 @@ eval $($LINUXBREW_ROOT/.linuxbrew/bin/brew shellenv)
 当初は窓口サーバへのsshのポート転送が許可されていないため，VS CodeのRemote Development拡張機能が使えませんでした．
 この件をIMCに問い合わせたところ，対応していただけましたので，今では利用できます．
 
-ただし注意点として，VS Codeの設定で`"remote.SSH.lockfilesInTmp` を `true` にしないと正常に起動できません．
+~~ただし注意点として，VS Codeの設定で`"remote.SSH.lockfilesInTmp"` を `true` にしないと正常に起動できません．~~
+
+（2019年12月27日追記）
+`"remote.SSH.lockfilesInTmp"`をtrueにする必要はなくなったようです？
 
 
 ## D言語コンパイラなど
