@@ -18,12 +18,11 @@ unittest
     import std;
     immutable N = 1024 * 1024;
     auto rnd = Xorshift(0);
-    auto rcoef = [
-        iota(N).map!(a => complexGaussian01!double(rnd))
+    auto rcoef = 
+        generate!(() => complexGaussian01!double(rnd)).take(N)
         .map!("a.re * a.re", "a.re * a.im", "a.im * a.im")
         .fold!("a + b[0]", "a + b[1]", "a + b[2]")(0.0, 0.0, 0.0)
-        .tupleof
-    ].map!(a => a / N);
+        .tupleof.only.map!(a => a / N);
 
     assert(rcoef[0].approxEqual(0.5, 0, 1E-2)); // 実部の電力
     assert(rcoef[1].approxEqual(0.0, 0, 1E-2)); // 実部と虚部の相関
