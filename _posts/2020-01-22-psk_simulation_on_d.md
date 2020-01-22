@@ -164,17 +164,10 @@ $$
 
 という変換によって複素数バージョンのBox-Muller法になります（振幅方向にレイリー分布，位相方向に一様分布なことがよくわかりますね）．
 これをプログラムにすると次のようになります．
+単体テストには，プログラムが正しいかどうかを確認するために，実部と虚部の相関行列を計算して，それぞれの電力が0.5であることと，実部と虚部が無相関であることを確認しています．
+
+[ソースコードはここ](https://github.com/k3kaimu/blog-repo/blob/master/_posts/data/wireless_sim_d/complex_gaussian.d)
 
 ```d
-import std.complex;
-import std.math;
-import std.random;
-
-Complex!F boxMuller01(F, UniformRNG)(ref UniformRNG rnd)
-{
-    F x = uniform01!F(rnd);
-    F y = uniform01!F(rnd);
-
-    return cast(Complex!F)(sqrt(-log(x)) * std.complex.expi(2 * pi * y));
-}
+{% include_relative data/wireless_sim_d/complex_gaussian.d %}
 ```
