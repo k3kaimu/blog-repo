@@ -104,13 +104,14 @@ $$
 
 このような複素微分不可能な関数に微分を割り当てる方法としてウィルティンガー微分がある．
 
-ウィルティンガー微分とは，簡単にいえば$z$と$z^{*}$を独立変数として扱う微分である．
-つまり，$f(z,z^{*}) = z|z|^2 = z^2 z^{*}$に関して，
+ウィルティンガー微分とは，簡単にいえば$z$と$z^\ast$を独立変数として扱う微分である．
+
+つまり，$f(z,z^{\ast}) = z\|z\|^2 = z^2 z^\ast$に関して，
 
 $$
 \begin{align}
-\frac{\partial f(z,z^{*})}{\partial z} &= 2zz^{*} = 2|z|^2 \\
-\frac{\partial f(z,z^{*})}{\partial z^{*}} &= z^2
+\frac{\partial f(z,z^\ast)}{\partial z} &= 2zz^\ast = 2|z|^2 \\
+\frac{\partial f(z,z^\ast)}{\partial z^\ast} &= z^2
 \end{align}
 $$
 
