@@ -14,6 +14,7 @@ mathjax: true
 ## 実数関数の微分と一次近似
 
 実数関数$f(x)$の$x=a$での微分値は以下の極限で定義される．
+
 $$\displaystyle
 f'(a) = \lim_{\Delta x \rightarrow 0} \frac{f(a + \Delta x) - f(a) }{\Delta x}
 $$
