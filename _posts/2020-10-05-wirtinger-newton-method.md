@@ -254,8 +254,8 @@ $$
 1 & -i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{\partial u}{\partial z} (x,y) & \frac{1}{2} \frac{\partial u}{\partial z^{\ast}} (x,y) (x,y) \\
- \frac{\partial v}{\partial z} (x,y) & \frac{1}{2} \frac{\partial v}{\partial z^{\ast}} (x,y) (x,y)
+\frac{\partial u}{\partial z} (x,y) & \frac{1}{2} \frac{\partial u}{\partial z^{\ast}} (x,y) \\
+ \frac{\partial v}{\partial z} (x,y) & \frac{1}{2} \frac{\partial v}{\partial z^{\ast}} (x,y)
 \end{bmatrix} \\
 &=
 \begin{bmatrix}
@@ -309,3 +309,42 @@ z_{n+1} = z_{n} - \frac{f(z_n) \frac{\partial f^{\ast}}{\partial z^{\ast}}(z_n) 
 $$
 
 というように，よく見る1変数のニュートン法を得る．
+
+
+## 例
+
+$f(z)=z\lvert z \rvert^2 - 3$という非正則な関数を例にして試してみる．
+
+この関数のゼロ点は3の三乗根$\sqrt[3]{3} \approx 1.4422$である．
+
+ニュートン法に出てくるウィルティンガー微分は次の通りである．
+
+$$
+\frac{\partial f}{\partial z} = \left(\frac{\partial f^{\ast}}{\partial z^{\ast}}(z)\right)^{\ast} = 2 |z|^2
+$$
+
+$$
+\frac{\partial f}{\partial z^{\ast}}(z_n) = \left(\frac{\partial f^{\ast}}{\partial z}(z)\right)^{\ast} = z^2
+$$
+
+これを利用すれば更新式は次の通りである．
+
+$$
+\begin{align*}
+z_{n+1} &= z_n - \frac{(z_n|z_n|^2 - 3)\times 2 |z_n|^2 - (z_n^{\ast}|z_n|^2 - 3) z_n^2}{4|z_n|^4 - |z_n|^4} \\
+&= \frac{2}{3} z_n - \frac{z_n - 2z_n^{\ast}}{z_n^{\ast}|z_n|^2}
+\end{align*}
+$$
+
+適当に$z_0 = 3i$として更新していくと次の通り$\sqrt[3]{3} \approx 1.4422$へ収束していくことがわかる．
+
+$$
+\begin{align*}
+z_1 &= 0.3333... + 2.0000... i \\
+z_2 &= 0.9388... + 1.2544... i \\
+z_3 &= 1.5554... + 0.4454... i \\
+z_4 &= 1.4768... + 0.0947... i \\
+z_5 &= 1.4449... + 0.0048... i \\
+z_6 &= 1.4422... + 0.0000... i
+\end{align*}
+$$
