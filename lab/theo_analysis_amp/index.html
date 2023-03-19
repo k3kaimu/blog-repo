@@ -1,6 +1,7 @@
 ---
 layout: page
 title: 非線形増幅器の理論解析
+mathjax: true
 ---
 
 <script src="{{ " /js/math.js " | prepend: site.baseurl }}" charset="utf-8"></script>
@@ -11,10 +12,19 @@ title: 非線形増幅器の理論解析
 
 <div class="container">
   <form class="row">
-    <h3>使い方</h6>
+    <div class="mb-3">
+      このページでは，OFDM信号などの複素ガウス分布に従う信号が非線形増幅器から受ける影響を理論解析します．
+      どのような実装になっているか知りたい場合は，ブラウザでこのページのソースを表示して<code>script</code>タグの中身を眺めてください．
+    </div>
+    <h3>使い方</h3>
     <div class="mb-3">
       下のフォームに増幅器の伝達関数をJavascriptの関数として記述してください．
       引数の<code>x</code>は<a href="https://mathjs.org/">mathjs</a>の複素数オブジェクトであり，<code>v</code>は飽和入力振幅を表す数値です．
+      入力信号<code>x</code>は平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号です．
+      また，IBOと飽和入力振幅<code>v</code>には次のような関係があります．
+      $$
+      \mathrm{IBO}\text{ (dB)} = 20 \log_{10} v
+      $$
       たとえば，IBOは20 dBのときには<code>v = 10</code>です．DE公式の設定は基本的には変更する必要はありませんが，数値計算精度が足りない場合は調整してください．
 
     </div>
@@ -43,6 +53,21 @@ title: 非線形増幅器の理論解析
     <div class="mb-3">
       <label class="form-label">SDR特性</label>
       <div id='plotSDR'></div>
+      <div class="mb-3">
+        このページにおけるSDR（Signal-to-Distortion Ratio）特性は出力の線形成分と非線形成分の電力比であり，次のように定義されます．
+        $$
+        \mathrm{SDR}\text{ (dB)} = 10 \log_{10} \frac{P_1}{P_3 + P_5 + \cdots } = 10 \log_{10} \frac{P_1}{P_\mathrm{tot} - P_1}
+        $$
+        ただし，$P_1$, $P_3$, $P_5$, ...はそれぞれ線形成分と3次，5次の歪み成分の電力を表しています．
+        また，$P_\mathrm{tot}$は増幅器からの出力信号の電力であり，線形成分と全非線形成分をすべて含めた信号の電力です．
+        $P_1$及び$P_\mathrm{tot}$は増幅器の伝達関数$f(x)$に対して次のように計算できます．
+        $$
+        P_1 = \left| \mathbb{E}\left[ x f(x) \right] \right|^2
+        $$
+        $$
+        P_\mathrm{tot} = \mathbb{E}\left[ \left| f(x) \right|^2 \right]
+        $$
+      </div>
     </div>
   </form>
 </div>
