@@ -45,7 +45,7 @@
  * variables
  */
 // Import partials from `sass_dir` (defaults to `_sass`)
-@import "reset", "header", "post", "page", "syntax-highlighting", "index", "demo", "footer", "scrollbar", "backToTop";
+@import "reset", "header", "post", "page", "syntax-highlighting", "index", "demo", "footer", "scrollbar", "backToTop", "additional";
 // 两个人在列车上相遇
 // 一段旅程充满了诗意
 // 你突然说你要下车
@@ -55,3 +55,48 @@
 // 就再次回到这列车上
 // 我们谈天说地
 // 把酒言欢，赠予你新路途纹银
+
+
+// Configuration
+@import "bootstrapv5/scss/functions";
+@import "bootstrapv5/scss/variables";
+@import "bootstrapv5/scss/mixins";
+@import "bootstrapv5/scss/utilities";
+
+// Layout & components
+// @import "bootstrapv5/scss/root";
+// @import "bootstrapv5/scss/reboot";
+// @import "bootstrapv5/scss/type";
+// @import "bootstrapv5/scss/images";
+@import "bootstrapv5/scss/containers";
+@import "bootstrapv5/scss/grid";
+// @import "bootstrapv5/scss/tables";
+@import "bootstrapv5/scss/forms";
+// @import "bootstrapv5/scss/buttons";
+// @import "bootstrapv5/scss/transitions";
+// @import "bootstrapv5/scss/dropdown";
+// @import "bootstrapv5/scss/button-group";
+// @import "bootstrapv5/scss/nav";
+// @import "bootstrapv5/scss/navbar";
+// @import "bootstrapv5/scss/card";
+// @import "bootstrapv5/scss/accordion";
+// @import "bootstrapv5/scss/breadcrumb";
+// @import "bootstrapv5/scss/pagination";
+// @import "bootstrapv5/scss/badge";
+// @import "bootstrapv5/scss/alert";
+// @import "bootstrapv5/scss/progress";
+// @import "bootstrapv5/scss/list-group";
+// @import "bootstrapv5/scss/close";
+// @import "bootstrapv5/scss/toasts";
+// @import "bootstrapv5/scss/modal";
+// @import "bootstrapv5/scss/tooltip";
+// @import "bootstrapv5/scss/popover";
+// @import "bootstrapv5/scss/carousel";
+// @import "bootstrapv5/scss/spinners";
+// @import "bootstrapv5/scss/offcanvas";
+
+// Helpers
+@import "bootstrapv5/scss/helpers";
+
+// Utilities
+@import "bootstrapv5/scss/utilities/api";
