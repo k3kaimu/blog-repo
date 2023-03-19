@@ -1,0 +1,146 @@
+---
+layout: page
+title: 非線形増幅器の理論解析
+---
+
+<script src="{{ " /js/math.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src="{{ " /js/knockout-3.5.1.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src="{{ " /lab/js/numint.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src="{{ " /lab/js/nlanalysis.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
+
+<div class="container">
+  <form class="row">
+    <h3>使い方</h6>
+    <div class="mb-3">
+      下のフォームに増幅器の伝達関数をJavascriptの関数として記述してください．
+      引数の<code>x</code>は<a href="https://mathjs.org/">mathjs</a>の複素数オブジェクトであり，<code>v</code>は飽和入力振幅を表す数値です．
+      たとえば，IBOは20 dBのときには<code>v = 10</code>です．DE公式の設定は基本的には変更する必要はありませんが，数値計算精度が足りない場合は調整してください．
+
+    </div>
+    <div class="mb-3">
+      <label for="nlfunc" class="form-label">増幅器の伝達関数</label>
+      <code>function (x, v) {</code>
+      <textarea class="form-control" id="nlfunc" rows="5" data-bind="value: transferFuncBody"></textarea>
+      <code>}</code>
+    </div>
+    <div class="mb-3">
+      <label for="numOfDEDiv" class="form-label">DE公式の分割数</label>
+      <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
+    </div>
+    <div class="mb-3">
+      <label for="taDE" class="form-label">DE公式の計算開始点</label>
+      <input type="number" class="form-control" id="taDE" min="-6" max="-1" data-bind="value: taDE">
+    </div>
+    <div class="mb-3">
+      <label for="tbDE" class="form-label">DE公式の計算終了点</label>
+      <input type="number" class="form-control" id="tbDE" min="1" max="6" data-bind="value: tbDE">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">AM-AM/PM特性@<code>v=sqrt(10)</code></label>
+      <div id='plotAM-AMPM'></div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">SDR特性</label>
+      <div id='plotSDR'></div>
+    </div>
+  </form>
+</div>
+
+
+
+<script>
+
+
+
+function ViewModel() {
+  let self = this;
+
+  this.transferFuncBody = ko.observable(`// Rappモデル
+const s = 3;            // smoothness factor 
+const r = math.abs(x);  // 振幅
+return math.multiply(x, (1 + (r/v)**(2*s))**(-1/2/s));`);
+  this.numOfDEDiv = ko.observable(50);
+  this.taDE = ko.observable(-4);
+  this.tbDE = ko.observable(4);
+  this._updateHookForAMAMPM = ko.computed(function(){
+    let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
+    let func = Function("x", "v", self.transferFuncBody());
+
+    const SQRT10 = math.sqrt(10);
+
+    var traceAM = {
+      x: deint.xs,
+      y: deint.xs.map(x => math.abs(func(math.complex(x, 0), SQRT10))),
+      type: 'scatter',
+      name: "AM-AM"
+    };
+
+    var tracePM = {
+      x: deint.xs,
+      y: deint.xs.map(x => math.arg(func(math.complex(x, 0), SQRT10))),
+      type: 'scatter',
+      name: "AM-PM"
+    };
+
+    var data = [traceAM, tracePM];
+
+    var layout = {
+      xaxis: {
+        autorange: true,
+        title: "AM"
+      },
+      yaxis: {
+        autorange: true,
+        title: "AM/PM"
+      }
+    };
+
+    Plotly.newPlot('plotAM-AMPM', data, layout);
+
+    return true;
+  });
+  this._updateHookForSDR = ko.computed(function(){
+    let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
+    deint = withWeight(deint, x => 2*x*math.exp(-(x**2)));
+    let func = Function("x", "v", self.transferFuncBody());
+
+    let ibo_dBs = math.range(0, 12, 0.1);
+    // let ibos = math.map(ibo_dBs, x => 10**(-x/20));
+
+    function sdr(ibo) {
+      let lin = deint.integrate(x => math.multiply(func(math.complex(x, 0), 1/ibo), math.conj(x)));
+      let linP = math.abs(lin)**2;
+      let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), 1/ibo))**2);
+      return linP / (totP - linP);
+    }
+  
+    var traceSDR = {
+      x: ibo_dBs.valueOf(),
+      y: math.map(ibo_dBs, x => 10*math.log10(sdr(10**(-x/20)))).valueOf(),
+      type: 'scatter',
+    };
+
+    var data = [traceSDR];
+
+    var layout = {
+      xaxis: {
+        autorange: true,
+        title: "IBO (dB)"
+      },
+      yaxis: {
+        autorange: true,
+        title: "SDR (dB)"
+      }
+    };
+
+    Plotly.newPlot('plotSDR', data, layout);
+
+    return true;
+  });
+}
+
+pageViewModel = new ViewModel()
+ko.applyBindings(pageViewModel);
+
+</script>
