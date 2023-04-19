@@ -10,6 +10,7 @@ mathjax: true
 タイトルの通り，TCP/IP経由で複数のUSRPで同期送受信をするプログラムを作りました．
 ソースコードは[私のGitHubリポジトリ](https://github.com/k3kaimu/multiusrp)に上げています．
 
+<!--more-->
 
 ## 何ができるの？
 
