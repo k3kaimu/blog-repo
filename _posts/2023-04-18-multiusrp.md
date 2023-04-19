@@ -34,7 +34,7 @@ TCP/IPのソケット通信ができるプログラミング言語やライブ�
 また[Python用に簡単にTCP/IP経由のコマンドを発行できるライブラリ](https://github.com/k3kaimu/multiusrp/blob/master/client/multiusrp.py)も作っています．
 このライブラリを使えば，以下のように簡単にUSRPから信号の送受信ができます．
 
-```
+```py
 import multiusrp
 import numpy as np
 import time
