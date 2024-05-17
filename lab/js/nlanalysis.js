@@ -29,7 +29,7 @@ function laguerre(x, n, a) {
 
 
 function laguerre_norm(p, x) {
-    let m = p/2;
+    let m = (p-1)/2;
     let normCoef = 1/math.sqrt(m + 1.0);
     return ((-1) ** m) * normCoef * x * laguerre(math.abs(x)**2, m, 1);
 }
