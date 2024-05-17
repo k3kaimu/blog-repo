@@ -1,0 +1,210 @@
+---
+layout: page
+title: 非線形自己干渉キャンセラの理論解析
+mathjax: true
+---
+
+<script src="{{ " /js/math.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src="{{ " /js/knockout-3.5.1.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src="{{ " /lab/js/numint.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src="{{ " /lab/js/nlanalysis.js " | prepend: site.baseurl }}" charset="utf-8"></script>
+<script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
+
+<div class="container">
+  <form class="row">
+    <div class="mb-3">
+      このページでは，非線形自己干渉キャンセラの自己干渉除去性能を理論解析します．
+      どのような実装になっているか知りたい場合は，ブラウザでこのページのソースを表示して<code>script</code>タグの中身を眺めてください．
+    </div>
+    <h3>信号モデル</h3>
+    <div class="mb-3">
+      送信信号$x$を平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号とします．
+      この信号を，電力増幅器に入力して，以下の受信信号$y$を得るとします．
+      ただし，$\alpha(x)$は増幅器の伝達関数です．
+      $$
+      y = \alpha(x)
+      $$
+      この受信自己干渉信号に対して，次の非線形自己干渉キャンセラを考えます．
+      $$
+      c(x) = \sum_{p=1,3,\cdots}^{N_c} c_p x|x|^{p-1}
+      $$
+      ここで，$c_p$は以下の残留自己干渉電力$I^\mathrm{R}$が最小になるように推定されるとします．
+      $$
+      I^\mathrm{R} = \mathbb{E}\left[\left| \alpha(x) - c(x) \right|^2\right]
+      $$
+      このときの非線形自己干渉キャンセラの除去性能を解析します．
+    </div>
+    <h3>使い方</h3>
+    <div class="mb-3">
+      下のフォームに増幅器の伝達関数をJavascriptの関数として記述してください．
+      引数の<code>x</code>は<a href="https://mathjs.org/">mathjs</a>の複素数オブジェクトであり，<code>v</code>は増幅器の飽和入力振幅を表す数値です．
+      入力信号<code>x</code>は平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号です．
+      また，IBOと飽和入力振幅<code>v</code>には次のような関係があります．
+      $$
+      \mathrm{IBO}\text{ (dB)} = 20 \log_{10} v
+      $$
+      たとえば，IBOは20 dBのときには<code>v = 10</code>です．DE公式の設定は基本的には変更する必要はありませんが，数値計算精度が足りない場合は調整してください．
+
+    </div>
+    <div class="mb-3">
+      <label for="nlfunc" class="form-label">増幅器の伝達関数</label>
+      <code>function (x, v) {</code>
+      <textarea class="form-control" id="nlfunc" rows="5" data-bind="value: transferFuncBody"></textarea>
+      <code>}</code>
+    </div>
+    <div class="mb-3">
+      <label for="numOfCancOrder" class="form-label">キャンセラの最大次数</label>
+      <input type="number" class="form-control" id="numOfCancOrder" min="1" max="100" data-bind="value: numOfCancOrder">
+    </div>
+    <div class="mb-3">
+      <label for="numOfDEDiv" class="form-label">DE公式の分割数</label>
+      <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
+    </div>
+    <div class="mb-3">
+      <label for="taDE" class="form-label">DE公式の計算開始点</label>
+      <input type="number" class="form-control" id="taDE" min="-6" max="-1" data-bind="value: taDE">
+    </div>
+    <div class="mb-3">
+      <label for="tbDE" class="form-label">DE公式の計算終了点</label>
+      <input type="number" class="form-control" id="tbDE" min="1" max="6" data-bind="value: tbDE">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">AM-AM/PM特性@<code>v=sqrt(10)</code></label>
+      <div id='plotAM-AMPM'></div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">SICR特性</label>
+      <div id='plotSICR'></div>
+      <div class="mb-3">
+        このページにおけるSICR（Self-Interference Cancellation Ratio）特性は出力の線形成分と非線形成分の電力比であり，次のように定義されます．
+        $$
+        \mathrm{SICR}\text{ (dB)} = 10 \log_{10} \frac{I}{I^\mathrm{R}} = 10 \log_{10} \frac{P_1 + P_3 + P_5 + \cdots}{P_{N_c+2} + P_{N_c+4} + P_{N_c+6} + \cdots} = 10 \log_{10} \frac{P_\mathrm{tot}}{P_\mathrm{tot} - P_1 - P_3 - \cdots - P_{c}}
+        $$
+        ただし，$P_1$, $P_3$, $P_5$, ...はそれぞれ線形成分と3次，5次の歪み成分の電力を表しています．
+        また，$P_\mathrm{tot}$は全自己干渉電力で，$N_c$は非線形キャンセラの最大次数です．
+        $P_n$は増幅器の伝達関数$f(x)$に対して次のように計算できます．
+        $$
+        P_n = \left| \mathbb{E}\left[ \psi_n^{*}(x) f(x) \right] \right|^2
+        $$
+        $$
+        P_\mathrm{tot} = \mathbb{E}\left[ \left| f(x) \right|^2 \right]
+        $$
+        ここで，$\psi_n(x)$は以下のように定義されます．
+        $$
+        \psi_{2m+1}(x) = \frac{1}{\sqrt{m+1}} L_m^1(|x|^2) x
+        $$
+        これらの詳細については以下の論文を参照してください．
+
+        <ul>
+          <li>K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</li>
+          <li>K. Komatsu, Y. Miyaji, H. Uehara and T. Matsumura, "Theoretical Investigation and Optimization of Power Amplifier Nonlinearity for In-Band Full-Duplex Radios," in IEEE Transactions on Wireless Communications, vol. 22, no. 5, pp. 3384-3396, May 2023, doi: 10.1109/TWC.2022.3217765.</li>
+        </ul>
+      </div>
+    </div>
+  </form>
+</div>
+
+
+
+<script>
+
+
+
+function ViewModel() {
+  let self = this;
+
+  this.transferFuncBody = ko.observable(`// Rappモデル
+const s = 3;            // smoothness factor 
+const r = math.abs(x);  // 振幅
+return math.multiply(x, (1 + (r/v)**(2*s))**(-1/2/s));`);
+  this.numOfCancOrder = ko.observable(7);
+  this.numOfDEDiv = ko.observable(100);
+  this.taDE = ko.observable(-4);
+  this.tbDE = ko.observable(4);
+  this._updateHookForAMAMPM = ko.computed(function(){
+    let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
+    let func = Function("x", "v", self.transferFuncBody());
+
+    const SQRT10 = math.sqrt(10);
+
+    var traceAM = {
+      x: deint.xs,
+      y: deint.xs.map(x => math.abs(func(math.complex(x, 0), SQRT10))),
+      type: 'scatter',
+      name: "AM-AM"
+    };
+
+    var tracePM = {
+      x: deint.xs,
+      y: deint.xs.map(x => math.arg(func(math.complex(x, 0), SQRT10))),
+      type: 'scatter',
+      name: "AM-PM"
+    };
+
+    var data = [traceAM, tracePM];
+
+    var layout = {
+      xaxis: {
+        autorange: true,
+        title: "AM"
+      },
+      yaxis: {
+        autorange: true,
+        title: "AM/PM"
+      }
+    };
+
+    Plotly.newPlot('plotAM-AMPM', data, layout);
+
+    return true;
+  });
+  this._updateHookForSICR = ko.computed(function(){
+    let numOfCancOrderValue = self.numOfCancOrder();
+    let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
+    deint = withWeight(deint, x => 2*x*math.exp(-(x**2)));
+    let func = Function("x", "v", self.transferFuncBody());
+
+    let ibo_dBs = math.range(0, 12, 0.1);
+    // let ibos = math.map(ibo_dBs, x => 10**(-x/20));
+
+    function sicr(ibo) {
+      let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), 1/ibo))**2);
+      var resP = totP;
+      for(let i = 1; i <= numOfCancOrderValue; i += 2) {
+          let nlcoef = deint.integrate(x => math.multiply(func(math.complex(x, 0), 1/ibo), math.conj(laguerre_norm(i, x))));
+          let nlPower = math.abs(nlcoef)**2;
+          resP -= nlPower;
+      }
+
+      return totP / (resP);
+    }
+  
+    var traceSICR = {
+      x: ibo_dBs.valueOf(),
+      y: math.map(ibo_dBs, x => 10*math.log10(sicr(10**(-x/20)))).valueOf(),
+      type: 'scatter',
+    };
+
+    var data = [traceSICR];
+
+    var layout = {
+      xaxis: {
+        autorange: true,
+        title: "IBO (dB)"
+      },
+      yaxis: {
+        autorange: true,
+        title: "SICR (dB)"
+      }
+    };
+
+    Plotly.newPlot('plotSICR', data, layout);
+
+    return true;
+  });
+}
+
+pageViewModel = new ViewModel()
+ko.applyBindings(pageViewModel);
+
+</script>
