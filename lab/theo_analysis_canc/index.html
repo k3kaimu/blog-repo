@@ -14,15 +14,15 @@ mathjax: true
   <form class="row">
     <div class="mb-3">
       このページでは，非線形自己干渉キャンセラの自己干渉除去性能を理論解析します．
-      どのような実装になっているか知りたい場合は，ブラウザでこのページのソースを表示して<code>script</code>タグの中身を眺めてください．
+      どのような実装になっているか知りたい場合は，ブラウザでこのページのソースを表示して<code>script</code>タグの中身を眺めるか，<a href="https://github.com/k3kaimu/theo_NLAmp_Excel">Excelによる簡易版</a>もあります．
     </div>
     <h3>信号モデル</h3>
     <div class="mb-3">
       送信信号$x$を平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号とします．
       この信号を，電力増幅器に入力して，以下の受信信号$y$を得るとします．
-      ただし，$\alpha(x)$は増幅器の伝達関数です．
+      ただし，$f(x)$は増幅器の伝達関数です．
       $$
-      y = \alpha(x)
+      y = f(x)
       $$
       この受信自己干渉信号に対して，次の非線形自己干渉キャンセラを考えます．
       $$
@@ -30,13 +30,13 @@ mathjax: true
       $$
       ここで，$c_p$は以下の残留自己干渉電力$I^\mathrm{R}$が最小になるように推定されるとします．
       $$
-      I^\mathrm{R} = \mathbb{E}\left[\left| \alpha(x) - c(x) \right|^2\right]
+      I^\mathrm{R} = \mathbb{E}\left[\left| f(x) - c(x) \right|^2\right]
       $$
       このときの非線形自己干渉キャンセラの除去性能を解析します．
     </div>
     <h3>使い方</h3>
     <div class="mb-3">
-      下のフォームに増幅器の伝達関数をJavascriptの関数として記述してください．
+      下のフォームに増幅器の伝達関数$f(x)$をJavascriptの関数として記述してください．
       引数の<code>x</code>は<a href="https://mathjs.org/">mathjs</a>の複素数オブジェクトであり，<code>v</code>は増幅器の飽和入力振幅を表す数値です．
       入力信号<code>x</code>は平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号です．
       また，IBOと飽和入力振幅<code>v</code>には次のような関係があります．
@@ -78,7 +78,7 @@ mathjax: true
       <div class="mb-3">
         このページにおけるSICR（Self-Interference Cancellation Ratio）特性は出力の線形成分と非線形成分の電力比であり，次のように定義されます．
         $$
-        \mathrm{SICR}\text{ (dB)} = 10 \log_{10} \frac{I}{I^\mathrm{R}} = 10 \log_{10} \frac{P_1 + P_3 + P_5 + \cdots}{P_{N_c+2} + P_{N_c+4} + P_{N_c+6} + \cdots} = 10 \log_{10} \frac{P_\mathrm{tot}}{P_\mathrm{tot} - P_1 - P_3 - \cdots - P_{c}}
+        \mathrm{SICR}\text{ (dB)} = 10 \log_{10} \frac{I}{I^\mathrm{R}} = 10 \log_{10} \frac{P_1 + P_3 + P_5 + \cdots}{P_{N_c+2} + P_{N_c+4} + P_{N_c+6} + \cdots} = 10 \log_{10} \frac{P_\mathrm{tot}}{P_\mathrm{tot} - P_1 - P_3 - \cdots - P_{N_c}}
         $$
         ただし，$P_1$, $P_3$, $P_5$, ...はそれぞれ線形成分と3次，5次の歪み成分の電力を表しています．
         また，$P_\mathrm{tot}$は全自己干渉電力で，$N_c$は非線形キャンセラの最大次数です．
