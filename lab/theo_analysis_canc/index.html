@@ -20,9 +20,9 @@ mathjax: true
     <div class="mb-3">
       送信信号$x$を平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号とします．
       この信号を，電力増幅器に入力して，以下の受信信号$y$を得るとします．
-      ただし，$f(x)$は増幅器の伝達関数です．
+      ただし，$f(x)$はキャンセラで除去可能な成分を表す伝達関数（たとえば電力増幅器の伝達関数）で，$g(x)$は除去不可能な成分の伝達関数で，$f(x)$と$g(x)$は無相関であるとします．
       $$
-      y = f(x)
+      y = f(x) + g(x)
       $$
       この受信自己干渉信号に対して，次の非線形自己干渉キャンセラを考えます．
       $$
@@ -37,19 +37,26 @@ mathjax: true
     <h3>使い方</h3>
     <div class="mb-3">
       下のフォームに増幅器の伝達関数$f(x)$をJavascriptの関数として記述してください．
-      引数の<code>x</code>は<a href="https://mathjs.org/">mathjs</a>の複素数オブジェクトであり，<code>v</code>は増幅器の飽和入力振幅を表す数値です．
+      引数の<code>x</code>は<a href="https://mathjs.org/">mathjs</a>の複素数オブジェクトであり，<code>v</code>は任意に設定できるパラメータです．
       入力信号<code>x</code>は平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号です．
-      また，IBOと飽和入力振幅<code>v</code>には次のような関係があります．
+      <!-- また，IBOと飽和入力振幅<code>v</code>には次のような関係があります．
       $$
       \mathrm{IBO}\text{ (dB)} = 20 \log_{10} v
       $$
-      たとえば，IBOは20 dBのときには<code>v = 10</code>です．DE公式の設定は基本的には変更する必要はありませんが，数値計算精度が足りない場合は調整してください．
+      たとえば，IBOは20 dBのときには<code>v = 10</code>です．DE公式の設定は基本的には変更する必要はありませんが，数値計算精度が足りない場合は調整してください． -->
+      また，ある単一のパラメータだけを<code>v</code>として振ることができますので，例えばIBOとして振ったり，Rappモデルのスムースネスファクタとして振るなどしてください．
 
     </div>
     <div class="mb-3">
-      <label for="nlfunc" class="form-label">増幅器の伝達関数</label>
+      <label for="nlfunc" class="form-label">除去可能な伝達関数（増幅器など）</label>
       <code>function (x, v) {</code>
       <textarea class="form-control" id="nlfunc" rows="5" data-bind="value: transferFuncBody"></textarea>
+      <code>}</code>
+    </div>
+    <div class="mb-3">
+      <label for="nlfuncG" class="form-label">除去不可能な伝達関数（雑音など）</label>
+      <code>function (x, v, Ptot) {</code>
+      <textarea class="form-control" id="nlfuncG" rows="5" data-bind="value: transferFuncBodyG"></textarea>
       <code>}</code>
     </div>
     <div class="mb-3">
@@ -57,8 +64,20 @@ mathjax: true
       <input type="number" class="form-control" id="numOfCancOrder" min="1" max="100" data-bind="value: numOfCancOrder">
     </div>
     <div class="mb-3">
-      <label for="numOfDEDiv" class="form-label">DE公式の分割数</label>
-      <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
+      <label for="va" class="form-label">パラメータvの計算開始点$v_a$</label>
+      <input type="number" class="form-control" id="va" data-bind="value: va">
+    </div>
+    <div class="mb-3">
+      <label for="vb" class="form-label">パラメータvの計算終了点$v_b$</label>
+      <input type="number" class="form-control" id="vb" data-bind="value: vb">
+    </div>
+    <div class="mb-3">
+      <label for="numOfV" class="form-label">パラメータvの分割数</label>
+      <input type="number" class="form-control" id="numOfV" min="10" max="1000" data-bind="value: numOfV">
+    </div>
+    <div class="mb-3">
+      <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
+      <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
     </div>
     <div class="mb-3">
       <label for="taDE" class="form-label">DE公式の計算開始点</label>
@@ -69,25 +88,32 @@ mathjax: true
       <input type="number" class="form-control" id="tbDE" min="1" max="6" data-bind="value: tbDE">
     </div>
     <div class="mb-3">
-      <label class="form-label">AM-AM/PM特性@<code>v=sqrt(10)</code></label>
+      <label for="numOfDEDiv" class="form-label">DE公式の分割数</label>
+      <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">AM-AM/PM特性</label>
       <div id='plotAM-AMPM'></div>
     </div>
     <div class="mb-3">
       <label class="form-label">SICR特性</label>
       <div id='plotSICR'></div>
       <div class="mb-3">
-        このページにおけるSICR（Self-Interference Cancellation Ratio）特性は出力の線形成分と非線形成分の電力比であり，次のように定義されます．
+        このページにおけるSICR（Self-Interference Cancellation Ratio）特性は受信信号電力と残留電力であり，次のように定義されます．
         $$
-        \mathrm{SICR}\text{ (dB)} = 10 \log_{10} \frac{I}{I^\mathrm{R}} = 10 \log_{10} \frac{P_1 + P_3 + P_5 + \cdots}{P_{N_c+2} + P_{N_c+4} + P_{N_c+6} + \cdots} = 10 \log_{10} \frac{P_\mathrm{tot}}{P_\mathrm{tot} - P_1 - P_3 - \cdots - P_{N_c}}
+        \mathrm{SICR}\text{ (dB)} = 10 \log_{10} \frac{I}{I^\mathrm{R}} = 10 \log_{10} \frac{P_g + P_\mathrm{tot}}{P_g + P_{N_c+2} + P_{N_c+4} + P_{N_c+6} + \cdots} = 10 \log_{10} \frac{P_g + P_\mathrm{tot}}{P_\mathrm{tot} - P_1 - P_3 - \cdots - P_{N_c}}
         $$
-        ただし，$P_1$, $P_3$, $P_5$, ...はそれぞれ線形成分と3次，5次の歪み成分の電力を表しています．
-        また，$P_\mathrm{tot}$は全自己干渉電力で，$N_c$は非線形キャンセラの最大次数です．
-        $P_n$は増幅器の伝達関数$f(x)$に対して次のように計算できます．
+        ただし，$P_g$は除去不可能な成分の電力で，$P_1$, $P_3$, $P_5$, ...はそれぞれ除去可能な成分の線形成分と3次，5次の歪み成分の電力を表しています．
+        また，$P_\mathrm{tot}$は除去可能な成分の全電力で，$N_c$は非線形キャンセラの最大次数です．
+        $P_n$は伝達関数$f(x)$に対して次のように計算できます．
         $$
         P_n = \left| \mathbb{E}\left[ \psi_n^{*}(x) f(x) \right] \right|^2
         $$
         $$
         P_\mathrm{tot} = \mathbb{E}\left[ \left| f(x) \right|^2 \right]
+        $$
+        $$
+        P_g = \mathbb{E}\left[ \left| g(x) \right|^2 \right]
         $$
         ここで，$\psi_n(x)$は以下のように定義されます．
         $$
@@ -114,29 +140,39 @@ function ViewModel() {
   let self = this;
 
   this.transferFuncBody = ko.observable(`// Rappモデル
-const s = 3;            // smoothness factor 
+const g = 10**(10/20);   // IBO=10 dB
+const s = v;            // パラメータvをsmoothness factorとする
 const r = math.abs(x);  // 振幅
-return math.multiply(x, (1 + (r/v)**(2*s))**(-1/2/s));`);
+return math.multiply(x, (1 + (r/g)**(2*s))**(-1/2/s));`);
+  this.transferFuncBodyG = ko.observable(`// 今回は雑音を除去不可能な成分とする．
+// Ptotがf(x)の電力として与えられる．
+// そのためINR = 80 dBとなるように雑音を付与した状態を理論解析したいなら以下のようにする．
+return math.sqrt(Ptot * 1e-8);
+`);
   this.numOfCancOrder = ko.observable(7);
   this.numOfDEDiv = ko.observable(100);
   this.taDE = ko.observable(-4);
   this.tbDE = ko.observable(4);
+  this.va = ko.observable(0);
+  this.vb = ko.observable(15);
+  this.numOfV = ko.observable(300);
+  this.vForAMAMPM = ko.observable(10);
   this._updateHookForAMAMPM = ko.computed(function(){
     let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
     let func = Function("x", "v", self.transferFuncBody());
 
-    const SQRT10 = math.sqrt(10);
+    const vvalue = self.vForAMAMPM();
 
     var traceAM = {
       x: deint.xs,
-      y: deint.xs.map(x => math.abs(func(math.complex(x, 0), SQRT10))),
+      y: deint.xs.map(x => math.abs(func(math.complex(x, 0), vvalue))),
       type: 'scatter',
       name: "AM-AM"
     };
 
     var tracePM = {
       x: deint.xs,
-      y: deint.xs.map(x => math.arg(func(math.complex(x, 0), SQRT10))),
+      y: deint.xs.map(x => math.arg(func(math.complex(x, 0), vvalue))),
       type: 'scatter',
       name: "AM-PM"
     };
@@ -163,25 +199,26 @@ return math.multiply(x, (1 + (r/v)**(2*s))**(-1/2/s));`);
     let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
     deint = withWeight(deint, x => 2*x*math.exp(-(x**2)));
     let func = Function("x", "v", self.transferFuncBody());
+    let funcG = Function("x", "v", "Ptot", self.transferFuncBodyG());
 
-    let ibo_dBs = math.range(0, 12, 0.1);
-    // let ibos = math.map(ibo_dBs, x => 10**(-x/20));
+    let paramlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true);
 
-    function sicr(ibo) {
-      let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), 1/ibo))**2);
+    function sicr(v) {
+      let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), v))**2);
+      let totG = deint.integrate(x => math.abs(funcG(math.complex(x, 0), v, totP))**2);
       var resP = totP;
       for(let i = 1; i <= numOfCancOrderValue; i += 2) {
-          let nlcoef = deint.integrate(x => math.multiply(func(math.complex(x, 0), 1/ibo), math.conj(laguerre_norm(i, x))));
+          let nlcoef = deint.integrate(x => math.multiply(func(math.complex(x, 0), v), math.conj(laguerre_norm(i, x))));
           let nlPower = math.abs(nlcoef)**2;
           resP -= nlPower;
       }
 
-      return totP / (resP);
+      return (totP + totG) / (resP + totG);
     }
   
     var traceSICR = {
-      x: ibo_dBs.valueOf(),
-      y: math.map(ibo_dBs, x => 10*math.log10(sicr(10**(-x/20)))).valueOf(),
+      x: paramlist.valueOf(),
+      y: math.map(paramlist, x => 10*math.log10(sicr(x))).valueOf(),
       type: 'scatter',
     };
 
@@ -190,7 +227,7 @@ return math.multiply(x, (1 + (r/v)**(2*s))**(-1/2/s));`);
     var layout = {
       xaxis: {
         autorange: true,
-        title: "IBO (dB)"
+        title: "パラメータv"
       },
       yaxis: {
         autorange: true,
