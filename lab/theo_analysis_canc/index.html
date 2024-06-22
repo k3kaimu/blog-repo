@@ -211,6 +211,7 @@ return 10*math.log10((Ptot + Z)/(IR + Z));
     let func = Function("x", "v", self.transferFuncBody());
     let evalFunc = Function("v", "Ptot", "PNLlist", "IR", "Pd", "cancOrder", self.evalPeformanceBody());
 
+    let plist = math.range(0, (numOfCancOrderValue-1)/2, true);
     let paramlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true);
     let deintIndexList = math.range(0, self.numOfDEDiv());
 
@@ -219,20 +220,36 @@ return 10*math.log10((Ptot + Z)/(IR + Z));
     function evaluate(v) {
         let funcvalues = math.map(deint.xs, x => func(math.complex(x, 0), v)).valueOf();
         let totP = math.sum(math.map(deintIndexList, i => math.abs(funcvalues[i])**2 * deint.ws[i]));
-        let PNLlist = math.map(math.range(0, (numOfCancOrderValue-1)/2), p => math.abs(math.multiply(funcvalues, conjBasisValuesWithWeight[p]))**2).valueOf();
-        let IR = totP - math.sum(PNLlist);
+        let PNLlist = math.map(plist, p => math.abs(math.multiply(funcvalues, conjBasisValuesWithWeight[p]))**2).valueOf();
         let Pd = totP - PNLlist[0];
-        return evalFunc(v, totP, PNLlist, IR, Pd, numOfCancOrderValue);
+        var dstlist = [];
+        var IR = totP;
+        math.forEach(plist, i => {
+            IR -= PNLlist[i];
+            dstlist.push(evalFunc(v, totP, PNLlist, IR, Pd, i*2+1));
+        });
+        return dstlist;
     }
-  
-    var traceEvaluatedPerf = {
-      x: paramlist.valueOf(),
-      y: math.map(paramlist, x => evaluate(x)).valueOf(),
-      type: 'scatter',
-    };
 
-    var data = [traceEvaluatedPerf];
+    let evaluatedValues = math.map(paramlist, v => evaluate(v)).valueOf();
+  
+    // var traceEvaluatedPerf = {
+    //   x: paramlist.valueOf(),
+    //   y: ,
+    //   type: 'scatter',
+    // };
+
+    // var data = [traceEvaluatedPerf];
     // console.log(data[0].y);
+    let data = math.map(plist, p => {
+        return {
+            x: paramlist.valueOf(),
+            y: math.map(math.range(0, self.numOfV()), i => evaluatedValues[i][p]).valueOf(),
+            type: "scatter",
+            name: (p*2+1) + "次キャンセラ"
+        };
+    }).valueOf();
+    console.log(data);
 
     var layout = {
       xaxis: {
