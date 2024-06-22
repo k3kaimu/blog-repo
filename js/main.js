@@ -30,8 +30,11 @@
 
 //////////////////////////back to top////////////////////////////
 (function() {
-  var backToTop = document.querySelector('.back-to-top')
-  var backToTopA = document.querySelector('.back-to-top a')
+  var backToTop = document.querySelector('.back-to-top');
+  var backToTopA = document.querySelector('.back-to-top a');
+  if(!!!backToTop || !!!backToTopA)
+      return;
+
   // console.log(backToTop);
   window.addEventListener('scroll', function() {
 
@@ -87,3 +90,30 @@
   });
 
 })();
+
+
+
+function processTasksOnIdle(tasks, onFinish)
+{
+    if(tasks.length == 0) {
+        onFinish();
+        return;
+    }
+
+    async function runTasks(deadline) {
+        while(tasks.length && deadline.timeRemaining() > 0){
+            let task = tasks.shift();
+            await task();
+        }
+        
+        if(tasks.length){
+            requestIdleCallback(runTasks);
+        } else {
+            if(onFinish)
+                onFinish();
+        }
+    }
+
+
+    requestIdleCallback(runTasks);
+}

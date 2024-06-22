@@ -4,6 +4,7 @@ title: 非線形自己干渉キャンセラの理論解析
 mathjax: true
 ---
 
+<script src="{{ " /js/main.js " | prepend: site.baseurl }}" charset="utf-8"></script>
 <script src="{{ " /js/math.js " | prepend: site.baseurl }}" charset="utf-8"></script>
 <script src="{{ " /js/knockout-3.5.1.js " | prepend: site.baseurl }}" charset="utf-8"></script>
 <script src="{{ " /lab/js/numint.js " | prepend: site.baseurl }}" charset="utf-8"></script>
@@ -33,6 +34,7 @@ mathjax: true
       I^\mathrm{R} = \mathbb{E}\left[\left| f(x) - c(x) \right|^2\right]
       $$
       このときの非線形自己干渉キャンセラの除去性能や帯域内全二重が達成するSIDNR（所望信号電力/（残留SI+所望信号のひずみ+雑音電力））などを計算できます．
+      このページを読み込んだ際の初期値では，<a href="https://ieeexplore.ieee.org/document/9425006">こちらの論文</a>のFig. 6の結果と等価なパラメータや評価指標で理論解析した結果（LNAの効果を省略しているなど，一部異なります）が表示されます．
     </div>
     <h3>使い方</h3>
     <div class="mb-3">
@@ -73,23 +75,28 @@ mathjax: true
       <input type="number" class="form-control" id="numOfCancOrder" min="1" max="100" data-bind="value: numOfCancOrder">
     </div>
     <div class="mb-3">
-      <label for="va" class="form-label">パラメータvの計算開始点$v_a$</label>
+      <label for="va" class="form-label">パラメータvの計算開始点$v_a$（グラフ横軸の始点）</label>
       <input type="number" class="form-control" id="va" data-bind="value: va">
     </div>
     <div class="mb-3">
-      <label for="vb" class="form-label">パラメータvの計算終了点$v_b$</label>
+      <label for="vb" class="form-label">パラメータvの計算終了点$v_b$（グラフ横軸の終点）</label>
       <input type="number" class="form-control" id="vb" data-bind="value: vb">
     </div>
     <div class="mb-3">
-      <label for="numOfV" class="form-label">パラメータvの分割数</label>
+      <label for="numOfV" class="form-label">パラメータvの分割数（グラフ横軸の分割評価数）</label>
       <input type="number" class="form-control" id="numOfV" min="10" max="1000" data-bind="value: numOfV">
     </div>
     <div class="mb-3">
-      <label for="taDE" class="form-label">DE公式の計算開始点</label>
+      本プログラムではDE公式という数値積分公式を用いています．
+      デフォルトの値（$t_a=-4$, $t_b=4$, 分割数101）では87次ひずみ（87次のキャンセラ）の計算がギリギリの精度です．
+      これ以上の次数のひずみを計算したい用途はないと思いますが，もしより精度がほしい場合には$t_a$と$t_b$の範囲を広げたり，分割数を増やしてください．
+    </div>
+    <div class="mb-3">
+      <label for="taDE" class="form-label">DE公式の計算開始点$t_a$</label>
       <input type="number" class="form-control" id="taDE" min="-6" max="-1" data-bind="value: taDE">
     </div>
     <div class="mb-3">
-      <label for="tbDE" class="form-label">DE公式の計算終了点</label>
+      <label for="tbDE" class="form-label">DE公式の計算終了点$t_b$</label>
       <input type="number" class="form-control" id="tbDE" min="1" max="6" data-bind="value: tbDE">
     </div>
     <div class="mb-3">
@@ -97,15 +104,7 @@ mathjax: true
       <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
     </div>
     <div class="mb-3">
-      <label class="form-label">AM-AM/PM特性</label>
-      <div id='plotAM-AMPM'></div>
-    </div>
-    <div class="mb-3">
-      <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
-      <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
-    </div>
-    <div class="mb-3">
-      <label class="form-label">評価結果</label>
+      <label class="form-label">評価結果（<span data-bind="text: textComputeState"></span>）</label>
       <div id='plotPerf'></div>
       <div class="mb-3">
         このページにおけるSICR（Self-Interference Cancellation Ratio）特性は受信信号電力と残留電力であり，次のように定義されます．
@@ -131,10 +130,18 @@ mathjax: true
         これらの詳細については以下の論文を参照してください．
 
         <ul>
-          <li>K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</li>
-          <li>K. Komatsu, Y. Miyaji, H. Uehara and T. Matsumura, "Theoretical Investigation and Optimization of Power Amplifier Nonlinearity for In-Band Full-Duplex Radios," in IEEE Transactions on Wireless Communications, vol. 22, no. 5, pp. 3384-3396, May 2023, doi: 10.1109/TWC.2022.3217765.</li>
+          <li><a href="https://ieeexplore.ieee.org/document/9425006">K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</a></li>
+          <li><a href="https://ieeexplore.ieee.org/document/9937181">K. Komatsu, Y. Miyaji, H. Uehara and T. Matsumura, "Theoretical Investigation and Optimization of Power Amplifier Nonlinearity for In-Band Full-Duplex Radios," in IEEE Transactions on Wireless Communications, vol. 22, no. 5, pp. 3384-3396, May 2023, doi: 10.1109/TWC.2022.3217765.</a></li>
         </ul>
       </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">（参考）AM-AM/PM特性</label>
+      <div id='plotAM-AMPM'></div>
+    </div>
+    <div class="mb-3">
+      <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
+      <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
     </div>
   </form>
 </div>
@@ -149,24 +156,25 @@ function ViewModel() {
   let self = this;
 
   this.transferFuncBody = ko.observable(`// Rappモデル
-const vsat = 10**(10/20); // IBO=10 dB
+const vsat = 10**(7/20); // IBO=7 dB
 const s = v;              // パラメータvをsmoothness factorとする
 const r = math.abs(x);    // 振幅
 return math.multiply(x, (1 + (r/vsat)**(2*s))**(-1/2/s));`);
   this.evalPeformanceBody = ko.observable(`// 今回はSICRを評価する
-// Ptotがf(x)の電力として与えられるため，INR = 80 dBを満たす雑音電力は以下のようになる．
-const Z = Ptot * 10**(-80/10);
+// Ptotがf(x)の電力として与えられるため，INR = 60 dBを満たす雑音電力は以下のようになる．
+const Z = Ptot * 10**(-60/10);
 // cancOrder次数の非線形多項式キャンセラで除去後の残留自己干渉電力はIRで与えられるのでSICRの理論解析は以下のようになる．
 return 10*math.log10((Ptot + Z)/(IR + Z));
 `);
   this.numOfCancOrder = ko.observable(7);
-  this.numOfDEDiv = ko.observable(51);
+  this.numOfDEDiv = ko.observable(101);
   this.taDE = ko.observable(-4);
   this.tbDE = ko.observable(4);
   this.va = ko.observable(0);
-  this.vb = ko.observable(12);
-  this.numOfV = ko.observable(200);
+  this.vb = ko.observable(5.1);
+  this.numOfV = ko.observable(300);
   this.vForAMAMPM = ko.observable(10);
+  this.textComputeState = ko.observable("計算完了");
   this._updateHookForAMAMPM = ko.computed(function(){
     let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
     let func = Function("x", "v", self.transferFuncBody());
@@ -205,6 +213,8 @@ return 10*math.log10((Ptot + Z)/(IR + Z));
     return true;
   });
   this._updateHookForEvalPerf = ko.computed(function(){
+    self.textComputeState("計算中...");
+
     let numOfCancOrderValue = self.numOfCancOrder();
     let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
     deint = withWeight(deint, x => 2*x*math.exp(-(x**2)));
@@ -231,39 +241,43 @@ return 10*math.log10((Ptot + Z)/(IR + Z));
         return dstlist;
     }
 
-    let evaluatedValues = math.map(paramlist, v => evaluate(v)).valueOf();
-  
-    // var traceEvaluatedPerf = {
-    //   x: paramlist.valueOf(),
-    //   y: ,
-    //   type: 'scatter',
-    // };
+    var evaluatedValues = [];
+    var tasks = [];
+    paramlist.forEach(v => {
+        async function task() {
+            self.textComputeState("計算中...進捗：" + (evaluatedValues.length) + "/" + (self.numOfV()) );
+            evaluatedValues.push(evaluate(v));
+        }
+        tasks.push(task);
+    });
 
-    // var data = [traceEvaluatedPerf];
-    // console.log(data[0].y);
-    let data = math.map(plist, p => {
-        return {
-            x: paramlist.valueOf(),
-            y: math.map(math.range(0, self.numOfV()), i => evaluatedValues[i][p]).valueOf(),
-            type: "scatter",
-            name: (p*2+1) + "次キャンセラ"
+    processTasksOnIdle(tasks, () => {
+        // 終了時の処理
+        let data = math.map(plist, p => {
+            return {
+                x: paramlist.valueOf(),
+                y: math.map(math.range(0, self.numOfV()), i => evaluatedValues[i][p]).valueOf(),
+                type: "scatter",
+                name: (p*2+1) + "次キャンセラ"
+            };
+        }).valueOf();
+        console.log(data);
+
+        var layout = {
+          xaxis: {
+            autorange: true,
+            title: "パラメータv"
+          },
+          yaxis: {
+            autorange: true,
+            title: "評価指標 (dB)"
+          }
         };
-    }).valueOf();
-    console.log(data);
 
-    var layout = {
-      xaxis: {
-        autorange: true,
-        title: "パラメータv"
-      },
-      yaxis: {
-        autorange: true,
-        title: "評価指標 (dB)"
-      }
-    };
-
-    Plotly.newPlot('plotPerf', data, layout);
-    console.log("DONE");
+        Plotly.newPlot('plotPerf', data, layout);
+        console.log("DONE");
+        self.textComputeState("計算完了");
+    });  
 
     return true;
   });
