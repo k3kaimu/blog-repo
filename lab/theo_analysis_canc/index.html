@@ -85,10 +85,6 @@ mathjax: true
       <input type="number" class="form-control" id="numOfV" min="10" max="1000" data-bind="value: numOfV">
     </div>
     <div class="mb-3">
-      <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
-      <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
-    </div>
-    <div class="mb-3">
       <label for="taDE" class="form-label">DE公式の計算開始点</label>
       <input type="number" class="form-control" id="taDE" min="-6" max="-1" data-bind="value: taDE">
     </div>
@@ -103,6 +99,10 @@ mathjax: true
     <div class="mb-3">
       <label class="form-label">AM-AM/PM特性</label>
       <div id='plotAM-AMPM'></div>
+    </div>
+    <div class="mb-3">
+      <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
+      <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
     </div>
     <div class="mb-3">
       <label class="form-label">評価結果</label>
@@ -160,7 +160,7 @@ const Z = Ptot * 10**(-80/10);
 return 10*math.log10((Ptot + Z)/(IR + Z));
 `);
   this.numOfCancOrder = ko.observable(7);
-  this.numOfDEDiv = ko.observable(100);
+  this.numOfDEDiv = ko.observable(51);
   this.taDE = ko.observable(-4);
   this.tbDE = ko.observable(4);
   this.va = ko.observable(0);
@@ -212,10 +212,14 @@ return 10*math.log10((Ptot + Z)/(IR + Z));
     let evalFunc = Function("v", "Ptot", "PNLlist", "IR", "Pd", "cancOrder", self.evalPeformanceBody());
 
     let paramlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true);
+    let deintIndexList = math.range(0, self.numOfDEDiv());
+
+    let conjBasisValuesWithWeight = math.map(math.range(1, numOfCancOrderValue, 2, true), p => math.map(deintIndexList, i => math.multiply(math.conj(laguerre_norm(p, deint.xs[i])), deint.ws[i])).valueOf()).valueOf();
 
     function evaluate(v) {
-        let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), v))**2);
-        let PNLlist = math.map(math.range(1, numOfCancOrderValue, 2, true), p => math.abs(deint.integrate(x => math.multiply(func(math.complex(x, 0), v), math.conj(laguerre_norm(p, x)))))**2);
+        let funcvalues = math.map(deint.xs, x => func(math.complex(x, 0), v)).valueOf();
+        let totP = math.sum(math.map(deintIndexList, i => math.abs(funcvalues[i])**2 * deint.ws[i]));
+        let PNLlist = math.map(math.range(0, (numOfCancOrderValue-1)/2), p => math.abs(math.multiply(funcvalues, conjBasisValuesWithWeight[p]))**2).valueOf();
         let IR = totP - math.sum(PNLlist);
         let Pd = totP - PNLlist[0];
         return evalFunc(v, totP, PNLlist, IR, Pd, numOfCancOrderValue);
