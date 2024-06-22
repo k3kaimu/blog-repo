@@ -20,11 +20,11 @@ mathjax: true
     <div class="mb-3">
       送信信号$x$を平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号とします．
       この信号を，電力増幅器に入力して，以下の受信信号$y$を得るとします．
-      ただし，$f(x)$はキャンセラで除去可能な成分を表す伝達関数（たとえば電力増幅器の伝達関数）で，$g(x)$は除去不可能な成分の伝達関数で，$f(x)$と$g(x)$は無相関であるとします．
+      ただし，$f(x)$はキャンセラで除去可能な成分を表す伝達関数（たとえば電力増幅器の伝達関数）です．
       $$
-      y = f(x) + g(x)
+      y = f(x)
       $$
-      この受信自己干渉信号に対して，次の非線形自己干渉キャンセラを考えます．
+      この受信信号に対して，次の非線形自己干渉キャンセラを考えます．
       $$
       c(x) = \sum_{p=1,3,\cdots}^{N_c} c_p x|x|^{p-1}
       $$
@@ -32,7 +32,7 @@ mathjax: true
       $$
       I^\mathrm{R} = \mathbb{E}\left[\left| f(x) - c(x) \right|^2\right]
       $$
-      このときの非線形自己干渉キャンセラの除去性能を解析します．
+      このときの非線形自己干渉キャンセラの除去性能や帯域内全二重が達成するSIDNR（所望信号電力/（残留SI+所望信号のひずみ+雑音電力））などを計算できます．
     </div>
     <h3>使い方</h3>
     <div class="mb-3">
@@ -48,15 +48,24 @@ mathjax: true
 
     </div>
     <div class="mb-3">
-      <label for="nlfunc" class="form-label">除去可能な伝達関数（増幅器など）</label>
+      <label for="nlfunc" class="form-label">非線形伝達関数（増幅器など）</label>
       <code>function (x, v) {</code>
       <textarea class="form-control" id="nlfunc" rows="5" data-bind="value: transferFuncBody"></textarea>
       <code>}</code>
     </div>
     <div class="mb-3">
-      <label for="nlfuncG" class="form-label">除去不可能な伝達関数（雑音など）</label>
-      <code>function (x, v, Ptot) {</code>
-      <textarea class="form-control" id="nlfuncG" rows="5" data-bind="value: transferFuncBodyG"></textarea>
+      下のフォームにはSICRやSIDNR，もしくは達成可能レートなどの評価指標を計算するための関数を記述してください．
+      引数の<code>v</code>は掃引するパラメータ（グラフの横軸の値），
+      <code>Ptot</code>は$f(x)$の出力電力の期待値，
+      <code>PNLlist</code>は$f(x)$の出力に現れる非線形電力のリスト（0番目は線形成分，1番目は3次成分，．．），
+      <code>IR</code>は残留自己干渉電力，
+      <code>Pd</code>は$f(x)$の3次以上の非線形成分の全電力，
+      <code>cancOrder</code>はキャンセラの次数です．
+    </div>
+    <div class="mb-3">
+      <label for="evalPerf" class="form-label">評価指標</label>
+      <code>function (v, Ptot, PNLlist, IR, Pd, cancOrder) {</code>
+      <textarea class="form-control" id="evalPerf" rows="5" data-bind="value: evalPeformanceBody"></textarea>
       <code>}</code>
     </div>
     <div class="mb-3">
@@ -96,8 +105,8 @@ mathjax: true
       <div id='plotAM-AMPM'></div>
     </div>
     <div class="mb-3">
-      <label class="form-label">SICR特性</label>
-      <div id='plotSICR'></div>
+      <label class="form-label">評価結果</label>
+      <div id='plotPerf'></div>
       <div class="mb-3">
         このページにおけるSICR（Self-Interference Cancellation Ratio）特性は受信信号電力と残留電力であり，次のように定義されます．
         $$
@@ -140,22 +149,23 @@ function ViewModel() {
   let self = this;
 
   this.transferFuncBody = ko.observable(`// Rappモデル
-const g = 10**(10/20);   // IBO=10 dB
-const s = v;            // パラメータvをsmoothness factorとする
-const r = math.abs(x);  // 振幅
-return math.multiply(x, (1 + (r/g)**(2*s))**(-1/2/s));`);
-  this.transferFuncBodyG = ko.observable(`// 今回は雑音を除去不可能な成分とする．
-// Ptotがf(x)の電力として与えられる．
-// そのためINR = 80 dBとなるように雑音を付与した状態を理論解析したいなら以下のようにする．
-return math.sqrt(Ptot * 1e-8);
+const vsat = 10**(10/20); // IBO=10 dB
+const s = v;              // パラメータvをsmoothness factorとする
+const r = math.abs(x);    // 振幅
+return math.multiply(x, (1 + (r/vsat)**(2*s))**(-1/2/s));`);
+  this.evalPeformanceBody = ko.observable(`// 今回はSICRを評価する
+// Ptotがf(x)の電力として与えられるため，INR = 80 dBを満たす雑音電力は以下のようになる．
+const Z = Ptot * 10**(-80/10);
+// cancOrder次数の非線形多項式キャンセラで除去後の残留自己干渉電力はIRで与えられるのでSICRの理論解析は以下のようになる．
+return 10*math.log10((Ptot + Z)/(IR + Z));
 `);
   this.numOfCancOrder = ko.observable(7);
   this.numOfDEDiv = ko.observable(100);
   this.taDE = ko.observable(-4);
   this.tbDE = ko.observable(4);
   this.va = ko.observable(0);
-  this.vb = ko.observable(15);
-  this.numOfV = ko.observable(300);
+  this.vb = ko.observable(12);
+  this.numOfV = ko.observable(200);
   this.vForAMAMPM = ko.observable(10);
   this._updateHookForAMAMPM = ko.computed(function(){
     let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
@@ -194,35 +204,31 @@ return math.sqrt(Ptot * 1e-8);
 
     return true;
   });
-  this._updateHookForSICR = ko.computed(function(){
+  this._updateHookForEvalPerf = ko.computed(function(){
     let numOfCancOrderValue = self.numOfCancOrder();
     let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
     deint = withWeight(deint, x => 2*x*math.exp(-(x**2)));
     let func = Function("x", "v", self.transferFuncBody());
-    let funcG = Function("x", "v", "Ptot", self.transferFuncBodyG());
+    let evalFunc = Function("v", "Ptot", "PNLlist", "IR", "Pd", "cancOrder", self.evalPeformanceBody());
 
     let paramlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true);
 
-    function sicr(v) {
-      let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), v))**2);
-      let totG = deint.integrate(x => math.abs(funcG(math.complex(x, 0), v, totP))**2);
-      var resP = totP;
-      for(let i = 1; i <= numOfCancOrderValue; i += 2) {
-          let nlcoef = deint.integrate(x => math.multiply(func(math.complex(x, 0), v), math.conj(laguerre_norm(i, x))));
-          let nlPower = math.abs(nlcoef)**2;
-          resP -= nlPower;
-      }
-
-      return (totP + totG) / (resP + totG);
+    function evaluate(v) {
+        let totP = deint.integrate(x => math.abs(func(math.complex(x, 0), v))**2);
+        let PNLlist = math.map(math.range(1, numOfCancOrderValue, 2, true), p => math.abs(deint.integrate(x => math.multiply(func(math.complex(x, 0), v), math.conj(laguerre_norm(p, x)))))**2);
+        let IR = totP - math.sum(PNLlist);
+        let Pd = totP - PNLlist[0];
+        return evalFunc(v, totP, PNLlist, IR, Pd, numOfCancOrderValue);
     }
   
-    var traceSICR = {
+    var traceEvaluatedPerf = {
       x: paramlist.valueOf(),
-      y: math.map(paramlist, x => 10*math.log10(sicr(x))).valueOf(),
+      y: math.map(paramlist, x => evaluate(x)).valueOf(),
       type: 'scatter',
     };
 
-    var data = [traceSICR];
+    var data = [traceEvaluatedPerf];
+    // console.log(data[0].y);
 
     var layout = {
       xaxis: {
@@ -231,11 +237,12 @@ return math.sqrt(Ptot * 1e-8);
       },
       yaxis: {
         autorange: true,
-        title: "SICR (dB)"
+        title: "評価指標 (dB)"
       }
     };
 
-    Plotly.newPlot('plotSICR', data, layout);
+    Plotly.newPlot('plotPerf', data, layout);
+    console.log("DONE");
 
     return true;
   });
