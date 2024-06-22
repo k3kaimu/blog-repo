@@ -112,29 +112,6 @@ mathjax: true
     <div class="mb-3">
       <label class="form-label">評価結果（<span data-bind="text: textComputeState"></span>）</label>
       <div id='plotPerf'></div>
-      <div class="mb-3">
-        このページにおけるSICR（Self-Interference Cancellation Ratio）特性は受信信号電力と残留電力であり，次のように定義されます．
-        $$
-        \mathrm{SICR}\text{ (dB)} = 10 \log_{10} \frac{I}{I^\mathrm{R}} = 10 \log_{10} \frac{P_g + P_\mathrm{tot}}{P_g + P_{N_c+2} + P_{N_c+4} + P_{N_c+6} + \cdots} = 10 \log_{10} \frac{P_g + P_\mathrm{tot}}{P_\mathrm{tot} - P_1 - P_3 - \cdots - P_{N_c}}
-        $$
-        ただし，$P_g$は除去不可能な成分の電力で，$P_1$, $P_3$, $P_5$, ...はそれぞれ除去可能な成分の線形成分と3次，5次の歪み成分の電力を表しています．
-        また，$P_\mathrm{tot}$は除去可能な成分の全電力で，$N_c$は非線形キャンセラの最大次数です．
-        $P_n$は伝達関数$f(x)$に対して次のように計算できます．
-        $$
-        P_n = \left| \mathbb{E}\left[ \psi_n^{*}(x) f(x) \right] \right|^2
-        $$
-        $$
-        P_\mathrm{tot} = \mathbb{E}\left[ \left| f(x) \right|^2 \right]
-        $$
-        $$
-        P_g = \mathbb{E}\left[ \left| g(x) \right|^2 \right]
-        $$
-        ここで，$\psi_n(x)$は以下のように定義されます．
-        $$
-        \psi_{2m+1}(x) = \frac{1}{\sqrt{m+1}} L_m^1(|x|^2) x
-        $$
-        これらの詳細については論文[1][2]を参照してください．
-      </div>
     </div>
     <div class="mb-3">
       <label class="form-label">（参考）AM-AM/PM特性</label>
@@ -146,7 +123,7 @@ mathjax: true
     </div>
     <h4>コピペ用</h4>
     <div class="mb-3">
-      参考：SIDNR最適化関数（論文[2]のFig. 6）※DE公式の分割数を1001くらいまで増やすこと
+      参考：SIDNR最適化関数$f(x)$（論文[2]のFig. 6）※DE公式の分割数を1001くらいまで増やすこと
       <textarea class="form-control" rows="7">
 const a1 = 0.381;
 const a3 = -1.70e-3;  // 論文では符号を間違えてました
@@ -161,7 +138,7 @@ else return y / math.abs(y);
       </textarea>
     </div>
     <div class="mb-3">
-      SICR最適化関数（論文[2]のFig. 7）※DE公式の分割数を1001くらいまで増やすこと
+      参考：SICR最適化関数$f(x)$（論文[2]のFig. 7）※DE公式の分割数を1001くらいまで増やすこと
       <textarea class="form-control" rows="7">
 const a1 = 0.441;
 const a3 = -4.77e-3;  // 論文では符号を間違えてました
