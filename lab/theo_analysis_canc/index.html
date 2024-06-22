@@ -16,9 +16,10 @@ mathjax: true
     <div class="mb-3">
       このページでは，非線形自己干渉キャンセラの自己干渉除去性能を理論解析します．
       どのような実装になっているか知りたい場合は，ブラウザでこのページのソースを表示して<code>script</code>タグの中身を眺めるか，<a href="https://github.com/k3kaimu/theo_NLAmp_Excel">Excelによる簡易版</a>もあります．
-      本ページの結果を論文等で利用される場合は，以下の論文と，また本ページのURLと作者である小松和暉の名前を以下のような形で論文中に明記していただけると助かります．
+      本ページの結果を論文等で利用される場合は，以下の論文[1][2]と，また本ページのURLと作者である小松和暉の名前を以下のような形で論文中に明記していただけると助かります．
       <ul>
-        <li><a href="https://ieeexplore.ieee.org/document/9425006">K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</a></li>
+        <li><a href="https://ieeexplore.ieee.org/document/9425006">[1] K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</a></li>
+        <li><a href="https://ieeexplore.ieee.org/document/9937181">[2] K. Komatsu, Y. Miyaji, H. Uehara and T. Matsumura, "Theoretical Investigation and Optimization of Power Amplifier Nonlinearity for In-Band Full-Duplex Radios," in IEEE Transactions on Wireless Communications, vol. 22, no. 5, pp. 3384-3396, May 2023, doi: 10.1109/TWC.2022.3217765.</a></li>
         <li>小松和暉, "非線形自己干渉キャンセラの理論解析", https://blog.toyohashi.nagoya/lab/theo_analysis_canc/.</li>
       </ul>
     </div>
@@ -39,7 +40,7 @@ mathjax: true
       I^\mathrm{R} = \mathbb{E}\left[\left| f(x) - c(x) \right|^2\right]
       $$
       このときの非線形自己干渉キャンセラの除去性能や帯域内全二重が達成するSIDNR（所望信号電力/（残留SI+所望信号のひずみ+雑音電力））などを計算できます．
-      このページを読み込んだ際の初期値では，<a href="https://ieeexplore.ieee.org/document/9425006">こちらの論文</a>のFig. 6の結果と等価なパラメータや評価指標で理論解析した結果（LNAの効果を省略しているなど，一部異なります）が表示されます．
+      このページを読み込んだ際の初期値では，論文[1]のFig. 6の結果と等価なパラメータや評価指標で理論解析した結果（LNAの効果を省略しているなど，一部異なります）が表示されます．
     </div>
     <h3>使い方</h3>
     <div class="mb-3">
@@ -132,12 +133,7 @@ mathjax: true
         $$
         \psi_{2m+1}(x) = \frac{1}{\sqrt{m+1}} L_m^1(|x|^2) x
         $$
-        これらの詳細については以下の論文を参照してください．
-
-        <ul>
-          <li><a href="https://ieeexplore.ieee.org/document/9425006">K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</a></li>
-          <li><a href="https://ieeexplore.ieee.org/document/9937181">K. Komatsu, Y. Miyaji, H. Uehara and T. Matsumura, "Theoretical Investigation and Optimization of Power Amplifier Nonlinearity for In-Band Full-Duplex Radios," in IEEE Transactions on Wireless Communications, vol. 22, no. 5, pp. 3384-3396, May 2023, doi: 10.1109/TWC.2022.3217765.</a></li>
-        </ul>
+        これらの詳細については論文[1][2]を参照してください．
       </div>
     </div>
     <div class="mb-3">
@@ -147,6 +143,37 @@ mathjax: true
     <div class="mb-3">
       <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
       <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
+    </div>
+    <h4>コピペ用</h4>
+    <div class="mb-3">
+      参考：SIDNR最適化関数（論文[2]のFig. 6）※DE公式の分割数を1001くらいまで増やすこと
+      <textarea class="form-control" rows="7">
+const a1 = 0.381;
+const a3 = -1.70e-3;  // 論文では符号を間違えてました
+const a5 = -3.17e-3;
+const a7 = -1.26e-3;  // 論文では符号を間違えてました
+const vsat = 10**(v/20); // IBO=v dB
+x = math.multiply(x, 1/vsat, 1/a1);
+const r = math.abs(x);    // 振幅
+const y = a1*r + a3*laguerre_norm(3, r) + a5*laguerre_norm(5, r) + a7*laguerre_norm(7, r);
+if(math.abs(y) < 1) return y;
+else return y / math.abs(y);
+      </textarea>
+    </div>
+    <div class="mb-3">
+      SICR最適化関数（論文[2]のFig. 7）※DE公式の分割数を1001くらいまで増やすこと
+      <textarea class="form-control" rows="7">
+const a1 = 0.441;
+const a3 = -4.77e-3;  // 論文では符号を間違えてました
+const a5 = -1.19e-2;
+const a7 = +1.43e-3;  // 論文では符号を間違えてました
+const vsat = 10**(v/20); // IBO=v dB
+x = math.multiply(x, 1/vsat, 1/a1);
+const r = math.abs(x);    // 振幅
+const y = a1*r + a3*laguerre_norm(3, r) + a5*laguerre_norm(5, r) + a7*laguerre_norm(7, r);
+if(math.abs(y) < 1) return y;
+else return y / math.abs(y);
+      </textarea>
     </div>
   </form>
 </div>
