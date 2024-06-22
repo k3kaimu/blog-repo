@@ -16,12 +16,17 @@ mathjax: true
     <div class="mb-3">
       このページでは，非線形自己干渉キャンセラの自己干渉除去性能を理論解析します．
       どのような実装になっているか知りたい場合は，ブラウザでこのページのソースを表示して<code>script</code>タグの中身を眺めるか，<a href="https://github.com/k3kaimu/theo_NLAmp_Excel">Excelによる簡易版</a>もあります．
+      本ページの結果を論文等で利用される場合は，以下の論文と，また本ページのURLと作者である小松和暉の名前を以下のような形で論文中に明記していただけると助かります．
+      <ul>
+        <li><a href="https://ieeexplore.ieee.org/document/9425006">K. Komatsu, Y. Miyaji and H. Uehara, "Theoretical Analysis of In-Band Full-Duplex Radios With Parallel Hammerstein Self-Interference Cancellers," in IEEE Transactions on Wireless Communications, vol. 20, no. 10, pp. 6772-6786, Oct. 2021, doi: 10.1109/TWC.2021.3076496.</a></li>
+        <li>小松和暉, "非線形自己干渉キャンセラの理論解析", https://blog.toyohashi.nagoya/lab/theo_analysis_canc/.</li>
+      </ul>
     </div>
     <h3>信号モデル</h3>
     <div class="mb-3">
       送信信号$x$を平均$0$，分散$1$の複素ガウス分布$\mathcal{CN}(0, 1)$に従う信号とします．
       この信号を，電力増幅器に入力して，以下の受信信号$y$を得るとします．
-      ただし，$f(x)$はキャンセラで除去可能な成分を表す伝達関数（たとえば電力増幅器の伝達関数）です．
+      ただし，$f(x)$はキャンセラで除去をする対象の非線形伝達関数（たとえば電力増幅器の伝達関数）です．
       $$
       y = f(x)
       $$
