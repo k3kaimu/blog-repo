@@ -228,6 +228,18 @@ defaultPresetList = [
             va: 0, vb: 5.1, numOfV: 300,
             vForAMAMPM: 10,
         }
+    ),
+    new Preset(
+        "FD_Rapp_1",
+        "Rappモデルでスムースネスファクタを変えたときの各非線形ひずみの電力@IBO=7dB",
+        {
+            transferFuncBody: makeRappScript("7", "v"),
+            evalPeformanceBody: "return 10*math.log10(PNLlist[(cancOrder-1)/2]);",
+            numOfCancOrder: 1,
+            taDE: -4, tbDE: 4, numOfDEDiv: 101, 
+            va: 0.1, vb: 5.1, numOfV: 300,
+            vForAMAMPM: 10,
+        }
     )
 ];
 
@@ -342,7 +354,7 @@ class ViewModel {
                         x: paramlist.valueOf(),
                         y: math.map(math.range(0, self.numOfV()), i => evaluatedValues[i][p]).valueOf(),
                         type: "scatter",
-                        name: (p*2+1) + "次キャンセラ"
+                        name: `P=${p*2+1}`
                     };
                 }).valueOf();
 
@@ -399,7 +411,8 @@ class ViewModel {
     }
 }
 
-pageViewModel = new ViewModel()
+pageViewModel = new ViewModel();
 ko.applyBindings(pageViewModel);
+
 
 </script>
