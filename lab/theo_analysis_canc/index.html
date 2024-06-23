@@ -229,7 +229,7 @@ defaultPresetList = [
         }
     ),
     new Preset(
-        "FD_Rapp_1",
+        "Rapp_NL",
         "Rappモデルでスムースネスファクタを変えたときの各非線形ひずみの電力@IBO=7dB",
         {
             transferFuncBody: makeRappScript("7", "v"),
@@ -238,6 +238,22 @@ defaultPresetList = [
             taDE: -4, tbDE: 4, numOfDEDiv: 101, 
             va: 0.1, vb: 5.1, numOfV: 300,
             maxPNL: 7,
+        }
+    ),
+    new Preset(
+        "Rapp_NLSpectrum",
+        "Rappモデルからの出力の各非線形次数のスペクトル@IBO=7dB, s=3",
+        {
+            transferFuncBody: "const vsat = 10**(7/20);\nconst s = 3;\nconst r = math.abs(x);\nreturn math.multiply(x, (1 + (r/vsat)**(2*s))**(-1/2/s));",
+            evalPeformanceBody: "return 10*math.log10(PNLlist[(k-1)/2] * nTimesConvRectSpectrum(v, k) + 1e-10)",
+            numOfDEDiv: 101,
+            taDE: -4,
+            tbDE: 4,
+            va: -4,
+            vb: 4,
+            numOfV: 300,
+            klistString: "[1, 3, 5, 7]",
+            maxPNL: 7
         }
     )
 ];
