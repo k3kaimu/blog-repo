@@ -58,19 +58,20 @@ mathjax: true
     </div>
     <div class="mb-3">
       <label for="nlfunc" class="form-label">非線形伝達関数（増幅器など）</label>
-      <code>function (x, v, k) {</code>
+      <code>function f(x, v, k) {</code>
       <textarea class="form-control" id="nlfunc" rows="5" data-bind="value: transferFuncBody"></textarea>
       <code>}</code>
     </div>
     <div class="mb-3">
       下のフォームにはSICRやSIDNR，もしくは達成可能レートなどの評価指標を計算するための関数を記述してください．
       引数の<code>v</code>と<code>k</code>は掃引するパラメータ（グラフの横軸の値と系列ラベル），
+      <code>f</code>は上で記述した非線形伝達関数
       <code>Ptot</code>は$f(x)$の出力電力の期待値，
       <code>PNLlist</code>は$f(x)$の出力に現れる非線形電力のリスト（0番目は線形成分，1番目は3次成分，．．で最大次数は$P_\mathrm{max}$で指定）です．
     </div>
     <div class="mb-3">
       <label for="evalPerf" class="form-label">評価指標</label>
-      <code>function (v, k, Ptot, PNLlist, Pd, Ph) {</code>
+      <code>function (v, k, f, Ptot, PNLlist) {</code>
       <textarea class="form-control" id="evalPerf" rows="5" data-bind="value: evalPeformanceBody"></textarea>
       <code>}</code>
     </div>
@@ -252,8 +253,8 @@ defaultPresetList = [
             va: -4,
             vb: 4,
             numOfV: 300,
-            klistString: "[1, 3, 5, 7]",
-            maxPNL: 7
+            klistString: "[1, 3, 5, 7, 9, 11, 13]",
+            maxPNL: 25
         }
     )
 ];
