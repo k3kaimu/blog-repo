@@ -53,33 +53,30 @@ mathjax: true
       \mathrm{IBO}\text{ (dB)} = 20 \log_{10} v
       $$
       たとえば，IBOは20 dBのときには<code>v = 10</code>です．DE公式の設定は基本的には変更する必要はありませんが，数値計算精度が足りない場合は調整してください． -->
-      また，ある単一のパラメータだけを<code>v</code>として振ることができますので，例えばIBOとして振ったり，Rappモデルのスムースネスファクタとして振るなどしてください．
+      また，実数パラメータ<code>v</code>と離散パラメータ<code>k</code>を振ることができますので，例えば<code>v</code>はIBOやRappモデルのスムースネスファクタとして振ったり，<code>k</code>は整数にしてキャンセラの次数にするなどしてください．
       注意として，構文エラーなどは画面上には出ませんので，必ず開発者モードでコンソールにエラーが出ていないか確認しながらコードを書いてください．
     </div>
     <div class="mb-3">
       <label for="nlfunc" class="form-label">非線形伝達関数（増幅器など）</label>
-      <code>function (x, v) {</code>
+      <code>function (x, v, k) {</code>
       <textarea class="form-control" id="nlfunc" rows="5" data-bind="value: transferFuncBody"></textarea>
       <code>}</code>
     </div>
     <div class="mb-3">
       下のフォームにはSICRやSIDNR，もしくは達成可能レートなどの評価指標を計算するための関数を記述してください．
-      引数の<code>v</code>は掃引するパラメータ（グラフの横軸の値），
+      引数の<code>v</code>と<code>k</code>は掃引するパラメータ（グラフの横軸の値と系列ラベル），
       <code>Ptot</code>は$f(x)$の出力電力の期待値，
-      <code>PNLlist</code>は$f(x)$の出力に現れる非線形電力のリスト（0番目は線形成分，1番目は3次成分，．．），
-      <code>IR</code>は残留自己干渉電力，
-      <code>Pd</code>は$f(x)$の3次以上の非線形成分の全電力，
-      <code>cancOrder</code>はキャンセラの次数です．
+      <code>PNLlist</code>は$f(x)$の出力に現れる非線形電力のリスト（0番目は線形成分，1番目は3次成分，．．で最大次数は$P_\mathrm{max}$で指定）です．
     </div>
     <div class="mb-3">
       <label for="evalPerf" class="form-label">評価指標</label>
-      <code>function (v, Ptot, PNLlist, IR, Pd, cancOrder) {</code>
+      <code>function (v, k, Ptot, PNLlist, Pd, Ph) {</code>
       <textarea class="form-control" id="evalPerf" rows="5" data-bind="value: evalPeformanceBody"></textarea>
       <code>}</code>
     </div>
     <div class="mb-3">
-      <label for="numOfCancOrder" class="form-label">キャンセラの最大次数</label>
-      <input type="number" class="form-control" id="numOfCancOrder" min="1" max="100" data-bind="value: numOfCancOrder">
+      <label for="maxPNL" class="form-label">解析する最大の非線形次数$P_\mathrm{max}$</label>
+      <input type="number" class="form-control" id="maxPNL" min="1" data-bind="value: maxPNL">
     </div>
     <div class="mb-3">
       <label for="va" class="form-label">パラメータvの計算開始点$v_a$（グラフ横軸の始点）</label>
@@ -94,8 +91,12 @@ mathjax: true
       <input type="number" class="form-control" id="numOfV" min="10" max="1000" data-bind="value: numOfV">
     </div>
     <div class="mb-3">
+      <label for="klist" class="form-label">パラメータkのリスト（Javascriptの配列になるようにしてください）</label>
+      <input type="text" class="form-control" id="klist" data-bind="value: klistString">
+    </div>
+    <div class="mb-3">
       本プログラムではDE公式という数値積分公式を用いています．
-      デフォルトの値（$t_a=-4$, $t_b=4$, 分割数101）では87次ひずみ（87次のキャンセラ）の計算がギリギリの精度です．
+      デフォルトの値（$t_a=-4$, $t_b=4$, 分割数101）では87次ひずみの計算がギリギリの精度です．
       これ以上の次数のひずみを計算したい用途はないと思いますが，もしより精度がほしい場合には$t_a$と$t_b$の範囲を広げたり，分割数を増やしてください．
     </div>
     <div class="mb-3">
@@ -110,7 +111,9 @@ mathjax: true
       <label for="numOfDEDiv" class="form-label">DE公式の分割数</label>
       <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
     </div>
+    <p class="mb-3">以下の計算開始ボタンを押すと，下に評価結果が出力されます．</p>
     <div class="mb-3">
+      <button type="button" class="btn btn-primary" data-bind="click: startEvaluate">計算開始</button>
       <label class="form-label">評価結果（<span data-bind="text: textComputeState"></span>）</label>
       <div id='plotPerf'></div>
     </div>
@@ -120,14 +123,6 @@ mathjax: true
                   optionsText: function(item) { return item.label; },
                   value: selectedPreset,
                   optionsCaption: '-設定の例-'"></select>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">（参考）AM-AM/PM特性</label>
-      <div id='plotAM-AMPM'></div>
-    </div>
-    <div class="mb-3">
-      <label for="vForAMAMPM" class="form-label">AM-AM/PM特性を表示するためのvの値</label>
-      <input type="number" class="form-control" id="vForAMAMPM" data-bind="value: vForAMAMPM">
     </div>
     <h4>コピペ用</h4>
     <div class="mb-3">
@@ -189,7 +184,9 @@ return math.multiply(x, (1 + (r/vsat)**(2*s))**(-1/2/s));`;
 
 function makeSICRScript(Z_str)
 {
-    return `const Z = ${Z_str};
+    return `
+const Z = ${Z_str};
+var IR = Ptot - math.sum(PNLlist.slice(0, (k+1)/2));
 return 10*math.log10((Ptot + Z)/(IR + Z));`;
 }
 
@@ -206,12 +203,14 @@ return math.multiply(x, (1 + (r/vsat)**(2*s))**(-1/2/s));`,
         evalPeformanceBody: `// 今回はSICRを評価する
 // Ptotがf(x)の電力として与えられるため，INR = 60 dBを満たす雑音電力は以下のようになる．
 const Z = Ptot * 10**(-60/10);
-// cancOrder次数の非線形多項式キャンセラで除去後の残留自己干渉電力はIRで与えられるのでSICRの理論解析は以下のようになる．
+// 最大次数がk次の非線形多項式キャンセラで除去後の残留自己干渉電力IRは以下で与えられる．
+var IR = Ptot - math.sum(PNLlist.slice(0, (k+1)/2));
+// SICRの理論解析は以下のようになる．
 return 10*math.log10((Ptot + Z)/(IR + Z));`,
-        numOfCancOrder: 7,
         taDE: -4, tbDE: 4, numOfDEDiv: 101, 
         va: 0, vb: 5.1, numOfV: 300,
-        vForAMAMPM: 10,
+        klistString: "[1, 3, 5, 7]",
+        maxPNL: 7,
     }
 );
 
@@ -223,10 +222,10 @@ defaultPresetList = [
         {
             transferFuncBody: makeRappScript("7", "v"),
             evalPeformanceBody: makeSICRScript("Ptot * 10**(-60/10)"),
-            numOfCancOrder: 7,
+            klistString: "[1, 3, 5, 7]",
             taDE: -4, tbDE: 4, numOfDEDiv: 101, 
             va: 0, vb: 5.1, numOfV: 300,
-            vForAMAMPM: 10,
+            maxPNL: 7,
         }
     ),
     new Preset(
@@ -234,11 +233,11 @@ defaultPresetList = [
         "Rappモデルでスムースネスファクタを変えたときの各非線形ひずみの電力@IBO=7dB",
         {
             transferFuncBody: makeRappScript("7", "v"),
-            evalPeformanceBody: "return 10*math.log10(PNLlist[(cancOrder-1)/2]);",
-            numOfCancOrder: 1,
+            evalPeformanceBody: "return 10*math.log10(PNLlist[(k-1)/2]);",
+            klistString: "[1, 3, 5, 7]",
             taDE: -4, tbDE: 4, numOfDEDiv: 101, 
             va: 0.1, vb: 5.1, numOfV: 300,
-            vForAMAMPM: 10,
+            maxPNL: 7,
         }
     )
 ];
@@ -261,102 +260,70 @@ class ViewModel {
 
         this.transferFuncBody = ko.observable();
         this.evalPeformanceBody = ko.observable();
-        this.numOfCancOrder = ko.observable();
+        this.maxPNL = ko.observable();
         this.numOfDEDiv = ko.observable();
         this.taDE = ko.observable();
         this.tbDE = ko.observable();
         this.va = ko.observable();
         this.vb = ko.observable();
         this.numOfV = ko.observable();
-        this.vForAMAMPM = ko.observable();
+        this.klistString = ko.observable();
         this.fromJSObject(initialPreset.obj); // 初期値の読み込み
         this.textComputeState = ko.observable("計算完了");
-        this._updateHookForAMAMPM = ko.computed(function(){
-          let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
-          let func = Function("x", "v", self.transferFuncBody());
+    }
 
-          const vvalue = self.vForAMAMPM();
 
-          var traceAM = {
-            x: deint.xs,
-            y: deint.xs.map(x => math.abs(func(math.complex(x, 0), vvalue))),
-            type: 'scatter',
-            name: "AM-AM"
-          };
-
-          var tracePM = {
-            x: deint.xs,
-            y: deint.xs.map(x => math.arg(func(math.complex(x, 0), vvalue))),
-            type: 'scatter',
-            name: "AM-PM"
-          };
-
-          var data = [traceAM, tracePM];
-
-          var layout = {
-            xaxis: {
-              autorange: true,
-              title: "AM"
-            },
-            yaxis: {
-              autorange: true,
-              title: "AM/PM"
-            }
-          };
-
-          Plotly.newPlot('plotAM-AMPM', data, layout);
-
-          return true;
-        });
-        this._updateHookForEvalPerf = ko.computed(function(){
+    startEvaluate(){
+        let self = this;
+        try {
             self.textComputeState("計算中...");
 
-            let numOfCancOrderValue = self.numOfCancOrder();
+            let maxP = self.maxPNL();
+            let klist = Function(`return ${self.klistString()};`)();
             let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
             deint = withWeight(deint, x => 2*x*math.exp(-(x**2)));
-            let func = Function("x", "v", self.transferFuncBody());
-            let evalFunc = Function("v", "Ptot", "PNLlist", "IR", "Pd", "cancOrder", self.evalPeformanceBody());
+            let func = Function("x", "v", "k", self.transferFuncBody());
+            let evalFunc = Function("v", "k", "f", "Ptot", "PNLlist", self.evalPeformanceBody());
 
-            let plist = math.range(0, (numOfCancOrderValue-1)/2, true);
-            let paramlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true);
-            let deintIndexList = math.range(0, self.numOfDEDiv());
+            let plist = math.range(0, (maxP-1)/2, true).valueOf();
+            let vlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true).valueOf();
+            let deintIndexList = math.range(0, self.numOfDEDiv()).valueOf();
 
-            let conjBasisValuesWithWeight = math.map(math.range(1, numOfCancOrderValue, 2, true), p => math.map(deintIndexList, i => math.multiply(math.conj(laguerre_norm(p, deint.xs[i])), deint.ws[i])).valueOf()).valueOf();
+            let conjBasisValuesWithWeight = math.map(math.range(1, maxP, 2, true), p => math.map(deintIndexList, i => math.multiply(math.conj(laguerre_norm(p, deint.xs[i])), deint.ws[i])).valueOf()).valueOf();
 
-            function evaluate(v) {
-                let funcvalues = math.map(deint.xs, x => func(math.complex(x, 0), v)).valueOf();
-                let totP = math.sum(math.map(deintIndexList, i => math.abs(funcvalues[i])**2 * deint.ws[i]));
-                let PNLlist = math.map(plist, p => math.abs(math.multiply(funcvalues, conjBasisValuesWithWeight[p]))**2).valueOf();
-                let Pd = totP - PNLlist[0];
-                var dstlist = [];
-                var IR = totP;
-                math.forEach(plist, i => {
-                    IR -= PNLlist[i];
-                    dstlist.push(evalFunc(v, totP, PNLlist, IR, Pd, i*2+1));
-                });
-                return dstlist;
+            function evaluate(v, k) {
+                try {
+                    let funcvalues = math.map(deint.xs, x => func(math.complex(x, 0), v, k)).valueOf();
+                    let totP = math.sum(math.map(deintIndexList, i => math.abs(funcvalues[i])**2 * deint.ws[i]));
+                    let PNLlist = plist.map(p => math.abs(math.multiply(funcvalues, conjBasisValuesWithWeight[p]))**2);
+
+                    return evalFunc(v, k, func, totP, PNLlist);
+                } catch(err) {
+                    self.onError(err);
+                    throw err;
+                }
             }
 
             var evaluatedValues = [];
             var tasks = [];
-            paramlist.forEach(v => {
+            vlist.forEach(v => {
                 async function task() {
                     self.textComputeState("計算中...進捗：" + (evaluatedValues.length) + "/" + (self.numOfV()) );
-                    evaluatedValues.push(evaluate(v));
+                    evaluatedValues.push(klist.map(k => evaluate(v, k)));
                 }
                 tasks.push(task);
             });
 
             processTasksOnIdle(tasks, () => {
                 // 終了時の処理
-                let data = math.map(plist, p => {
+                let data = klist.map(function(k, ik){
                     return {
-                        x: paramlist.valueOf(),
-                        y: math.map(math.range(0, self.numOfV()), i => evaluatedValues[i][p]).valueOf(),
+                        x: vlist,
+                        y: math.map(math.range(0, self.numOfV()), i => evaluatedValues[i][ik]).valueOf(),
                         type: "scatter",
-                        name: `P=${p*2+1}`
+                        name: `k=${k}`
                     };
-                }).valueOf();
+                });
 
                 var layout = {
                   xaxis: {
@@ -373,25 +340,33 @@ class ViewModel {
                 console.log("DONE");
                 self.textComputeState("計算完了");
             });  
+            
+        }
+        catch(err) {
+            self.onError(err)
+        }
+    }
 
-            return true;
-        });
+
+    onError(err) {
+        this.textComputeState("エラーが出ました．詳細は開発者ツールで確認してください．");
+        console.error(err);
     }
 
 
     toJSObject()
     {
         var dst = {};
-        dst.transferFuncBody = this.transferFuncBody() ?? "";
-        dst.evalPeformanceBody = this.evalPeformanceBody() ?? "";
-        dst.numOfCancOrder = this.numOfCancOrder() ?? 7;
+        dst.transferFuncBody = this.transferFuncBody() ?? makeRappScript("7", "v");
+        dst.evalPeformanceBody = this.evalPeformanceBody() ?? makeSICRScript("Ptot * 10**(-60/10)");
         dst.numOfDEDiv = this.numOfDEDiv() ?? 101;
         dst.taDE = this.taDE() ?? -4;
         dst.tbDE = this.tbDE() ?? 4;
         dst.va = this.va() ?? 0;
         dst.vb = this.vb() ?? 5.1;
         dst.numOfV = this.numOfV() ?? 300;
-        dst.vForAMAMPM = this.vForAMAMPM() ?? 10;
+        dst.klistString = this.klistString() ?? "[1, 3, 5, 7]";
+        dst.maxPNL = this.maxPNL() ?? 7;
         return dst;
     }
 
@@ -400,19 +375,20 @@ class ViewModel {
     {
         this.transferFuncBody(obj.transferFuncBody ?? makeRappScript("7", "v"));
         this.evalPeformanceBody(obj.evalPeformanceBody ?? makeSICRScript("Ptot * 10**(-60/10)"));
-        this.numOfCancOrder(obj.numOfCancOrder ?? 7);
         this.numOfDEDiv(obj.numOfDEDiv ?? 101);
         this.taDE(obj.taDE ?? -4);
         this.tbDE(obj.tbDE ?? 4);
         this.va(obj.va ?? 0);
         this.vb(obj.vb ?? 5.1);
         this.numOfV(obj.numOfV ?? 300);
-        this.vForAMAMPM(obj.vForAMAMPM ?? 10);
+        this.klistString(obj.klistString ?? "[1, 3, 5, 7]");
+        this.maxPNL(obj.maxPNL ?? 7);
     }
 }
 
 pageViewModel = new ViewModel();
 ko.applyBindings(pageViewModel);
+pageViewModel.startEvaluate();
 
 
 </script>
