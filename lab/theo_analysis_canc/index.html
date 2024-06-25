@@ -112,11 +112,15 @@ mathjax: true
       <label for="numOfDEDiv" class="form-label">DE公式の分割数</label>
       <input type="number" class="form-control" id="numOfDEDiv" min="10" max="1000" data-bind="value: numOfDEDiv">
     </div>
-    <p class="mb-3">以下の計算開始ボタンを押すと，下に評価結果が出力されます．</p>
+    <p class="mb-3">以下の描画開始ボタンを押すと，下に評価結果が出力されます．</p>
     <div class="mb-3">
-      <button type="button" class="btn btn-primary" data-bind="click: startEvaluate">計算開始</button>
+      <button type="button" class="btn btn-primary" data-bind="click: startEvaluate">描画開始</button>
       <label class="form-label">評価結果（<span data-bind="text: textComputeState"></span>）</label>
       <div id='plotPerf'></div>
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="isYLogScale" data-bind="checked: isYLogScale">
+      <label for="isYLogScale" class="form-check-label">Y軸log</label>
     </div>
     <div class="mb-3">
       もし記述がわからなければ以下のプリセットリストから例を選択することも可能です．
@@ -212,6 +216,7 @@ return 10*math.log10((Ptot + Z)/(IR + Z));`,
         va: 0, vb: 5.1, numOfV: 300,
         klistString: "[1, 3, 5, 7]",
         maxPNL: 7,
+        isYLogScale: false,
     }
 );
 
@@ -227,6 +232,7 @@ defaultPresetList = [
             taDE: -4, tbDE: 4, numOfDEDiv: 101, 
             va: 0, vb: 5.1, numOfV: 300,
             maxPNL: 7,
+            isYLogScale: false,
         }
     ),
     new Preset(
@@ -239,6 +245,7 @@ defaultPresetList = [
             taDE: -4, tbDE: 4, numOfDEDiv: 101, 
             va: 0.1, vb: 5.1, numOfV: 300,
             maxPNL: 7,
+            isYLogScale: false,
         }
     ),
     new Preset(
@@ -254,7 +261,8 @@ defaultPresetList = [
             vb: 4,
             numOfV: 300,
             klistString: "[1, 3, 5, 7, 9, 11, 13]",
-            maxPNL: 25
+            maxPNL: 25,
+            isYLogScale: false,
         }
     )
 ];
@@ -285,6 +293,7 @@ class ViewModel {
         this.vb = ko.observable();
         this.numOfV = ko.observable();
         this.klistString = ko.observable();
+        this.isYLogScale = ko.observable();
         this.fromJSObject(initialPreset.obj); // 初期値の読み込み
         this.textComputeState = ko.observable("計算完了");
     }
@@ -353,6 +362,9 @@ class ViewModel {
                   }
                 };
 
+                if(!!self.isYLogScale())
+                    layout.yaxis.type = "log";
+
                 Plotly.newPlot('plotPerf', data, layout);
                 console.log("DONE");
                 self.textComputeState("計算完了");
@@ -384,6 +396,7 @@ class ViewModel {
         dst.numOfV = this.numOfV() ?? 300;
         dst.klistString = this.klistString() ?? "[1, 3, 5, 7]";
         dst.maxPNL = this.maxPNL() ?? 7;
+        dst.isYLogScale = this.isYLogScale() ?? false;
         return dst;
     }
 
@@ -400,6 +413,7 @@ class ViewModel {
         this.numOfV(obj.numOfV ?? 300);
         this.klistString(obj.klistString ?? "[1, 3, 5, 7]");
         this.maxPNL(obj.maxPNL ?? 7);
+        this.isYLogScale(obj.isYLogScale ?? false);
     }
 }
 
