@@ -115,7 +115,7 @@ mathjax: true
     <p class="mb-3">以下の描画開始ボタンを押すと，下に評価結果が出力されます．</p>
     <div class="mb-3">
       <button type="button" class="btn btn-primary" data-bind="click: startEvaluate">描画開始</button>
-      <label class="form-label">評価結果（<span data-bind="text: textComputeState"></span>）</label>
+      <label class="form-label">評価結果（<span data-bind="text: textComputeState"></span>，<span data-bind="text: Math.round(totalTime())"></span>ms）</label>
       <div id='plotPerf'></div>
     </div>
     <div class="mb-3 form-check">
@@ -296,14 +296,31 @@ class ViewModel {
         this.isYLogScale = ko.observable();
         this.fromJSObject(initialPreset.obj); // 初期値の読み込み
         this.textComputeState = ko.observable("計算完了");
+        this.totalTime = ko.observable(0.0);
     }
 
 
     startEvaluate(){
+        let freePtrList = [];
         let self = this;
         try {
             self.textComputeState("計算中...");
 
+            function toWasmMemory(arr, nbytes, ctr)
+            {
+                let ptr = mymath.exports.walloc(arr.length * nbytes);
+                let view = new ctr(mymath.exports.memory.buffer, ptr, arr.length);
+                view.set(arr);
+                return ptr;
+            }
+
+
+            function fromWasmMemory(ptr, nbytes, size, ctr)
+            {
+                return [...new ctr(mymath.exports.memory.buffer, ptr, size)];
+            }
+
+            const startInit = performance.now();
             let maxP = self.maxPNL();
             let klist = Function(`return ${self.klistString()};`)();
             let deint = new makeDEInt(0, Infinity, true, self.numOfDEDiv(), self.taDE(), self.tbDE());
@@ -315,15 +332,28 @@ class ViewModel {
             let vlist = math.range(self.va(), self.vb(), (self.vb() - self.va())/(self.numOfV()), true).valueOf();
             let deintIndexList = math.range(0, self.numOfDEDiv()).valueOf();
 
-            let conjBasisValuesWithWeight = math.map(math.range(1, maxP, 2, true), p => math.map(deintIndexList, i => math.multiply(math.conj(laguerre_norm(p, deint.xs[i])), deint.ws[i])).valueOf()).valueOf();
+            let plistptr = toWasmMemory(math.range(1, maxP, 2, true).valueOf(), 4, Int32Array); freePtrList.push(plistptr);
+            let xlistptr = toWasmMemory(deint.xs, 8, Float64Array); freePtrList.push(xlistptr);
+            let wlistptr = toWasmMemory(deint.ws, 8, Float64Array); freePtrList.push(wlistptr);
+            let prebasisptr = mymath.exports.preComputeLaguerreNormBasisWithWeight(plistptr, plist.length, xlistptr, deint.xs.length, wlistptr);
+            freePtrList.push(prebasisptr);
+
+            const endInit = performance.now();
+            self.totalTime(endInit - startInit);
 
             function evaluate(v, k) {
                 try {
                     let funcvalues = math.map(deint.xs, x => func(math.complex(x, 0), v, k)).valueOf();
-                    let totP = math.sum(math.map(deintIndexList, i => math.abs(funcvalues[i])**2 * deint.ws[i]));
-                    let PNLlist = plist.map(p => math.abs(math.multiply(funcvalues, conjBasisValuesWithWeight[p]))**2);
-
-                    return evalFunc(v, k, func, totP, PNLlist);
+                    let func_re_ptr = toWasmMemory(math.map(funcvalues, x => x.re).valueOf(), 8, Float64Array);
+                    let func_im_ptr = toWasmMemory(math.map(funcvalues, x => x.im).valueOf(), 8, Float64Array);
+                    let totP = mymath.exports.computeTotalPower(func_re_ptr, func_im_ptr, wlistptr, deint.xs.length);
+                    let PNLlistptr = mymath.exports.computePNLlist(prebasisptr, plist.length, deint.xs.length, func_re_ptr, func_im_ptr);
+                    let PNLlist = fromWasmMemory(PNLlistptr, 8, plist.length, Float64Array);
+                    let dst = evalFunc(v, k, func, totP, PNLlist);
+                    mymath.exports.wfree(func_re_ptr);
+                    mymath.exports.wfree(func_im_ptr);
+                    mymath.exports.wfree(PNLlistptr);
+                    return dst;
                 } catch(err) {
                     self.onError(err);
                     throw err;
@@ -334,8 +364,11 @@ class ViewModel {
             var tasks = [];
             vlist.forEach(v => {
                 async function task() {
+                    const start = performance.now();
                     self.textComputeState("計算中...進捗：" + (evaluatedValues.length) + "/" + (self.numOfV()) );
                     evaluatedValues.push(klist.map(k => evaluate(v, k)));
+                    const end = performance.now();
+                    self.totalTime(self.totalTime() + (end - start));
                 }
                 tasks.push(task);
             });
@@ -366,6 +399,9 @@ class ViewModel {
                     layout.yaxis.type = "log";
 
                 Plotly.newPlot('plotPerf', data, layout);
+
+                // 全WASMメモリの解放
+                freePtrList.forEach(p => mymath.exports.wfree(p));
                 console.log("DONE");
                 self.textComputeState("計算完了");
             });  
@@ -419,7 +455,15 @@ class ViewModel {
 
 pageViewModel = new ViewModel();
 ko.applyBindings(pageViewModel);
-pageViewModel.startEvaluate();
+// pageViewModel.startEvaluate();
+loadWASM("/lab/wasm/math.wasm",
+    {
+        env: {
+            powi_wasm: function(a, b) { return a**b; },
+            __builtin_trap: function() { console.error("ERROR on WASM."); }
+        }
+    }
+).then(lib => mymath = lib);
 
 
 </script>

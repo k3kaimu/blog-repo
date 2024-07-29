@@ -117,3 +117,11 @@ function processTasksOnIdle(tasks, onFinish)
 
     requestIdleCallback(runTasks);
 }
+
+
+async function loadWASM(path, importObject)
+{
+    return fetch(path)
+    .then(res => { console.log(res); return res.arrayBuffer();} )
+    .then(bytes => WebAssembly.instantiate(bytes, importObject).then(result => result.instance))
+}
