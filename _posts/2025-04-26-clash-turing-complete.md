@@ -753,7 +753,7 @@ myInstructions =
   :>  Copy reg0 reg2        -- reg2 = 1
   :>  sub                   -- reg3 = reg1 - 1
   :>  Imme 5
-  :>  jmpNOT0
+  :>  jmpNOT0               -- if(reg3 != 0) goto addr=5
   :> Imme 0
   :> Imme 0
   :>  Nil
@@ -772,7 +772,8 @@ myInstructions =
     and = Calc 3
     add = Calc 4
     sub = Calc 5
-    jmpNOT0 = Cond 0b101  -- if reg3 == 0 then pc = reg0 else pc + 1
+    jmpNOT0 = Cond 0b101  -- if reg3 != 0 then pc = reg0 else pc + 1
+
 ```
 
 以下のようにすると動作確認できます．
@@ -886,7 +887,7 @@ myInstructions =
   :>  Copy reg0 reg2        -- reg2 = 1
   :>  sub                   -- reg3 = reg1 - 1
   :>  Imme 5
-  :>  jmpNOT0
+  :>  jmpNOT0               -- if(reg3 != 0) goto addr=5
   :> Imme 0
   :> Imme 0
   :>  Nil
@@ -905,7 +906,8 @@ myInstructions =
     and = Calc 3
     add = Calc 4
     sub = Calc 5
-    jmpNOT0 = Cond 0b101  -- if reg3 == 0 then pc = reg0 else pc + 1
+    jmpNOT0 = Cond 0b101  -- if reg3 != 0 then pc = reg0 else pc + 1
+
 
 ```
 
