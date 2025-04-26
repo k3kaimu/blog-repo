@@ -7,7 +7,7 @@ author: けーさん/こまたん
 ---
 
 
-HaskellのでRTL記述のHDLがかけるClashというものがあります．
+HaskellでRTL記述のHDLがかけるClashというものがあります．
 Verilogとかを勉強しなくてもHaskellの高情報量の構文で記述すれば，それをVerilogなどのHDLに変換できます．
 
 今回はClashでRTL記述を書く勉強として，Turing CompleteというSteamゲームで出てくる課題？を解いていきます．
